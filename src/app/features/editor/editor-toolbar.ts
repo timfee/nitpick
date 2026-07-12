@@ -149,7 +149,10 @@ const TOOLS: ToolbarItem[] = [
       block-size: 1.5rem;
       align-self: center;
       background: var(--mat-sys-outline-variant);
-      margin-inline: 0.125rem;
+      // Toolbar gap is 0.5rem; adding another 0.5rem here makes the gutter
+      // around a divider read as ~1rem, distinct from the 0.5rem within a
+      // tool group.
+      margin-inline: 0.5rem;
     }
   `,
 })
