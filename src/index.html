@@ -7,11 +7,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="An editor that checks prose with Gemini." />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <!-- Self-hosted via scripts/vendor-fonts.mjs so text and icons never
-         depend on fonts.googleapis.com at runtime. The woff2 files are
-         content-hashed; fonts.css is served no-cache so regenerated subsets
-         reach browsers immediately (?v busts caches poisoned before that). -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=2" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Unsubsetted so the icon set never goes stale as buttons are added. -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <app-root></app-root>
