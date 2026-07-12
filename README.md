@@ -1,4 +1,4 @@
-# Nitpick
+# Nitpicker
 
 An editor that checks prose with Gemini, in the spirit of [proselint](https://github.com/amperser/proselint).
 Write in a rich-text editor, run a check, and get inline findings — redundancies, clichés,

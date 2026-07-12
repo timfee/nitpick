@@ -60,7 +60,7 @@ const TOOLS: Tool[] = [
 ];
 
 const SAMPLE = `
-<h1>Nitpick</h1>
+<h1>Nitpicker</h1>
 <p>Type or paste your prose, then press <strong>Check prose</strong>. This paragraph has
 problems on purpose:</p>
 <p>It goes without saying that in order to utilize this editor, you should basically avoid
@@ -93,6 +93,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
         align-items: center;
         gap: 0.375rem;
         margin-inline-end: 1rem;
+        font-weight: 450;
       }
       .active {
         background: var(--mat-sys-secondary-container);
@@ -106,11 +107,16 @@ clichés like the plague. At this point in time, most drafts could of been tight
         margin-inline-end: 0.75rem;
         white-space: nowrap;
       }
+      .account {
+        position: relative;
+      }
       .avatar {
+        position: absolute;
+        inset: 0;
+        margin: auto;
         width: 28px;
         height: 28px;
         border-radius: 50%;
-        vertical-align: middle;
       }
     }
     .menu-user {

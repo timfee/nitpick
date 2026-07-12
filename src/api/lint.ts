@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { LintReportSchema, MAX_FINDINGS, type LintReport } from '../shared/lint';
 import { env } from './env';
 
-const SYSTEM_INSTRUCTION = `You are Nitpick, an expert copy editor in the spirit of proselint.
+const SYSTEM_INSTRUCTION = `You are Nitpicker, an expert copy editor in the spirit of proselint.
 Lint the user's prose and report concrete, actionable findings: redundancies, clichés,
 weasel words, jargon, needless passive voice, wordiness, spelling, grammar, punctuation,
 inconsistencies, and unclear phrasing.

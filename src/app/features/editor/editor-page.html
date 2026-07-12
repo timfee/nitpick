@@ -1,7 +1,7 @@
 <mat-toolbar>
   <span class="brand mat-title-large">
     <mat-icon>spellcheck</mat-icon>
-    Nitpick
+    Nitpicker
   </span>
 
   @if (editor()) {
@@ -36,7 +36,7 @@
     Check prose
   </button>
 
-  <button matIconButton aria-label="Account" [matMenuTriggerFor]="accountMenu">
+  <button matIconButton class="account" aria-label="Account" [matMenuTriggerFor]="accountMenu">
     @if (user()?.picture; as picture) {
       <img class="avatar" [src]="picture" alt="" referrerpolicy="no-referrer" />
     } @else {
