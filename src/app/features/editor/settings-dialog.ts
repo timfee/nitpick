@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule } from '@angular/material/list';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { STYLE_RULES, type StyleRule } from '../../../shared/style-rules';
 import { STYLE_PACKAGES } from '../../../shared/styles';
@@ -10,7 +11,13 @@ import { StyleSettings } from '../../core/style-settings';
 
 @Component({
   selector: 'nit-settings-dialog',
-  imports: [MatButtonModule, MatCheckboxModule, MatDialogModule, MatListModule],
+  imports: [
+    MatButtonModule,
+    MatCheckboxModule,
+    MatDialogModule,
+    MatListModule,
+    MatTooltipModule,
+  ],
   templateUrl: './settings-dialog.html',
   styleUrl: './settings-dialog.scss',
 })

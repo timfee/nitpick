@@ -219,7 +219,7 @@ export class EditorPage {
 
   protected openSettings(): void {
     this.dialog.open(SettingsDialog, {
-      width: 'min(44rem, calc(100vw - 2rem))',
+      width: 'min(48rem, calc(100vw - 2rem))',
       maxWidth: 'none',
       autoFocus: 'dialog',
     });

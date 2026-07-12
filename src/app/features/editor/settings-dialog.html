@@ -27,13 +27,17 @@
       @if (current(); as pkg) {
         <header>
           <div class="text">
-            <span class="name">{{ pkg.label }}</span>
+            <h3>{{ pkg.label }}</h3>
             <span class="summary">{{ pkg.summary }}</span>
           </div>
           <button matButton (click)="settings.setAllRules(pkg.id, true)">All</button>
           <button matButton (click)="settings.setAllRules(pkg.id, false)">None</button>
         </header>
 
+        <div class="cols" aria-hidden="true">
+          <span>Rule</span>
+          <span class="hint-col">What it flags</span>
+        </div>
         <ul class="rules" role="list">
           @for (rule of rulesFor(pkg.id); track rule.id) {
             <li>
@@ -42,10 +46,10 @@
                 (change)="settings.setRule(pkg.id, rule.id, $event.checked)"
               >
                 <span class="rule-name">{{ rule.id }}</span>
-                @if (rule.hint) {
-                  <span class="rule-hint">{{ rule.hint }}</span>
-                }
               </mat-checkbox>
+              @if (rule.hint) {
+                <span class="rule-hint hint-col" [matTooltip]="rule.hint">{{ rule.hint }}</span>
+              }
             </li>
           }
         </ul>
