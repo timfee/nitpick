@@ -5,7 +5,6 @@ import {
   type ElementRef,
   afterNextRender,
   computed,
-  effect,
   inject,
   signal,
   viewChild,
@@ -92,20 +91,19 @@ export class EditorPage {
   protected readonly selectedId = signal<string | null>(null);
   protected readonly checking = signal(false);
   protected readonly stale = signal(false);
-  protected readonly words = signal(0);
   /** Flat document text, feeding the readability scores. */
   private readonly plain = signal('');
+  protected readonly words = computed(() => countWords(this.plain()));
   protected readonly readability = computed(() => analyzeReadability(this.plain()));
 
   private readonly main = viewChild<ElementRef<HTMLElement>>('main');
   /** Bumped per transaction so the popover tracks its highlight. */
   private readonly tick = signal(0);
-  protected readonly popover = signal<PopoverState | null>(null);
+  protected readonly popover = computed(() => this.computePopover());
 
   constructor() {
     afterNextRender(() => this.createEditor());
     inject(DestroyRef).onDestroy(() => this.editor()?.destroy());
-    effect(() => this.popover.set(this.computePopover()));
   }
 
   /** Anchors the popover under the selected highlight, in scroll-content coordinates. */
@@ -156,12 +154,10 @@ export class EditorPage {
       onUpdate: ({ editor }) => {
         const text = editor.getText();
         this.plain.set(text);
-        this.words.set(countWords(text));
         if (this.findings().length) this.stale.set(true);
       },
     });
     this.plain.set(editor.getText());
-    this.words.set(countWords(editor.getText()));
     this.editor.set(editor);
   }
 

@@ -29,12 +29,7 @@
   <div class="hovercard" role="tooltip" [style.left.px]="c.left" [style.bottom.px]="c.bottom">
     <div class="head">
       <span class="label">{{ c.label }}</span>
-      <span
-        class="value"
-        [class.ok]="c.status === 'ok'"
-        [class.high]="c.status === 'high'"
-        [class.severe]="c.status === 'severe'"
-      >
+      <span class="value" [class]="c.status">
         {{ c.value }}
       </span>
     </div>
@@ -44,9 +39,7 @@
         @for (z of c.zones; track z.from) {
           <div
             class="zone"
-            [class.ok]="z.status === 'ok'"
-            [class.high]="z.status === 'high'"
-            [class.severe]="z.status === 'severe'"
+            [class]="z.status"
             [style.left.%]="z.from"
             [style.width.%]="z.to - z.from"
           ></div>
