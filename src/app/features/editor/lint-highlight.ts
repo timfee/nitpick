@@ -60,7 +60,7 @@ export const LintHighlight = Extension.create<LintHighlightOptions>({
   name: 'lintHighlight',
 
   addOptions() {
-    return { onSelect: () => {} };
+    return { onSelect: () => undefined };
   },
 
   addCommands() {

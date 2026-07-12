@@ -21,8 +21,13 @@ apiRouter.post('/lint', json({ limit: '256kb' }), requireUser, async (req, res) 
   res.json(await lintText(parsed.data.text));
 });
 
-// Express 5 forwards rejected promises here automatically.
-const onError: ErrorRequestHandler = (err, _req, res, _next) => {
+// Express 5 forwards rejected promises here automatically. The four-argument
+// signature is what marks this as an error handler.
+const onError: ErrorRequestHandler = (err, _req, res, next) => {
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
   console.error('[api]', err);
   res.status(502).json({ error: 'Lint request failed — check server logs' });
 };
