@@ -17,13 +17,12 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Identity created by scripts/setup-deploy.sh; repository variables
+    # override these defaults when the GCP side is recreated elsewhere.
+    env:
+      WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER || 'projects/204060019607/locations/global/workloadIdentityPools/github/providers/github' }}
+      DEPLOY_SA: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT || 'github-deploy@nitpick-6an5rp.iam.gserviceaccount.com' }}
     steps:
-      - name: Check configuration
-        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER == '' || vars.GCP_DEPLOY_SERVICE_ACCOUNT == ''
-        run: |
-          echo "::error::Repository variables GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_DEPLOY_SERVICE_ACCOUNT are not set — run scripts/setup-deploy.sh once (see README)."
-          exit 1
-
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -48,8 +47,8 @@ jobs:
 
       - uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.WIF_PROVIDER }}
+          service_account: ${{ env.DEPLOY_SA }}
 
       - uses: google-github-actions/setup-gcloud@v2
 

@@ -39,8 +39,11 @@ scripts/setup-deploy.sh      # WIF pool + provider, deploy service account,
                              # GitHub repository variables (via gh if present)
 ```
 
-Until that has been run, the workflow fails fast with a pointer here.
-Manual deploys keep working: `scripts/init.sh` re-deploys from source.
+The workflow carries the current identity as defaults; if the GCP side is
+ever recreated, either update the defaults or set the
+`GCP_WORKLOAD_IDENTITY_PROVIDER` / `GCP_DEPLOY_SERVICE_ACCOUNT` repository
+variables (they win over the defaults). Manual deploys keep working:
+`scripts/init.sh` re-deploys from source.
 
 ## Configuration
 
