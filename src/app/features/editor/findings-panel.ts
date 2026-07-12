@@ -4,11 +4,12 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import { SuggestionChip } from './suggestion-chip';
 import type { UiFinding } from './text-index';
 
 @Component({
   selector: 'nit-findings-panel',
-  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule],
+  imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule, SuggestionChip],
   templateUrl: './findings-panel.html',
   styleUrl: './findings-panel.scss',
 })

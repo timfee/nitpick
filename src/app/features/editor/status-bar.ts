@@ -1,5 +1,6 @@
 import { Component, input, signal } from '@angular/core';
 
+import { MetricStat } from './metric-stat';
 import type { ReadabilityGrade, ReadabilityReport } from './readability';
 
 /** One shaded region of the hovercard's continuum, in percent of the track. */
@@ -41,6 +42,7 @@ const CARD_MARGIN = 8;
  */
 @Component({
   selector: 'nit-status-bar',
+  imports: [MetricStat],
   templateUrl: './status-bar.html',
   styleUrl: './status-bar.scss',
 })
@@ -51,11 +53,11 @@ export class StatusBar {
   protected readonly card = signal<MetricCard | null>(null);
 
   /** Grade-level metrics: lower is easier; the track spans 0..4x the target. */
-  protected showGrade(event: Event, g: ReadabilityGrade): void {
+  protected showGrade(anchor: HTMLElement, g: ReadabilityGrade): void {
     const max = g.limit * 4;
     const pct = (n: number) => Math.min(100, Math.round((n / max) * 1000) / 10);
     this.card.set(
-      this.placeCard(event, {
+      this.placeCard(anchor, {
         label: g.label,
         value: String(g.value),
         hint: `${g.hint}.`,
@@ -77,11 +79,11 @@ export class StatusBar {
   }
 
   /** Flesch reading ease is inverted: higher is easier, on a fixed 0-100 scale. */
-  protected showEase(event: Event, r: ReadabilityReport): void {
+  protected showEase(anchor: HTMLElement, r: ReadabilityReport): void {
     const ease = r.ease;
     const low = Math.round((ease.limit / 3) * 10) / 10;
     this.card.set(
-      this.placeCard(event, {
+      this.placeCard(anchor, {
         label: 'Flesch reading ease',
         value: String(ease.value),
         hint: `${ease.verdict} — higher scores read easier.`,
@@ -107,8 +109,8 @@ export class StatusBar {
   }
 
   /** Anchors the card above the hovered stat, clamped to the viewport. */
-  private placeCard(event: Event, card: Omit<MetricCard, 'left' | 'bottom'>): MetricCard {
-    const rect = (event.currentTarget as HTMLElement).getBoundingClientRect();
+  private placeCard(anchor: HTMLElement, card: Omit<MetricCard, 'left' | 'bottom'>): MetricCard {
+    const rect = anchor.getBoundingClientRect();
     const centered = rect.left + rect.width / 2 - CARD_WIDTH / 2;
     const left = Math.min(Math.max(centered, CARD_MARGIN), window.innerWidth - CARD_WIDTH - CARD_MARGIN);
     return { ...card, left, bottom: window.innerHeight - rect.top + CARD_MARGIN };

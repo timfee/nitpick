@@ -39,7 +39,7 @@
       <p>{{ f.message }}</p>
       @if (f.suggestion) {
         <div class="suggestion-row">
-          <span class="suggestion-chip"><span class="arrow">→</span> {{ f.suggestion }}</span>
+          <nit-suggestion-chip>{{ f.suggestion }}</nit-suggestion-chip>
           <button matButton (click)="applyFinding.emit(f); $event.stopPropagation()">Apply</button>
         </div>
       }

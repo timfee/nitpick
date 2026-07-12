@@ -15,20 +15,11 @@
   margin: 0;
   font: var(--mat-sys-body-small);
 }
-.suggestion-chip {
-  display: inline-flex;
-  width: auto;
+nit-suggestion-chip {
   align-self: flex-start;
-  font: var(--mat-sys-body-small);
   // The popover itself sits on surface-container-high, so the chip needs a
   // step brighter to still read as a distinct, content-hugging pill.
-  background: var(--mat-sys-surface-container-highest);
-  border-radius: 0.375rem;
-  padding: 0.125rem 0.5rem;
-  overflow-wrap: anywhere;
-  .arrow {
-    color: var(--mat-sys-on-surface-variant);
-  }
+  --nit-suggestion-chip-surface: var(--mat-sys-surface-container-highest);
 }
 .actions {
   display: flex;
