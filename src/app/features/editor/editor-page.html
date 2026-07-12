@@ -15,14 +15,12 @@
     class="check"
     matTooltip="Ctrl/⌘ + Enter"
     [disabled]="checking() || !editor()"
+    [showProgress]="checking()"
     (click)="check()"
   >
-    @if (checking()) {
-      <mat-spinner diameter="18" />
-    } @else {
-      <mat-icon>rate_review</mat-icon>
-    }
+    <mat-icon>rate_review</mat-icon>
     Check prose
+    <mat-spinner progressIndicator diameter="18" />
   </button>
 
   @if (editor(); as ed) {
