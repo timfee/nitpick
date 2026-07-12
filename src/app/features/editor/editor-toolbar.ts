@@ -14,9 +14,19 @@ interface Tool {
   can?: (editor: Editor) => boolean;
 }
 
-const TOOLS: Tool[] = [
+/** A thin visual break between related groups of tools. */
+interface Divider {
+  divider: true;
+}
+
+type ToolbarItem = Tool | Divider;
+
+const isDivider = (item: ToolbarItem): item is Divider => 'divider' in item;
+
+const TOOLS: ToolbarItem[] = [
   { icon: 'undo', tip: 'Undo', exec: (c) => c.undo(), can: (e) => e.can().undo() },
   { icon: 'redo', tip: 'Redo', exec: (c) => c.redo(), can: (e) => e.can().redo() },
+  { divider: true },
   { icon: 'format_bold', tip: 'Bold', exec: (c) => c.toggleBold(), active: ['bold'] },
   { icon: 'format_italic', tip: 'Italic', exec: (c) => c.toggleItalic(), active: ['italic'] },
   {
@@ -26,11 +36,31 @@ const TOOLS: Tool[] = [
     active: ['strike'],
   },
   {
+    icon: 'code',
+    tip: 'Inline code',
+    exec: (c) => c.toggleCode(),
+    active: ['code'],
+  },
+  { divider: true },
+  {
+    icon: 'format_h1',
+    tip: 'Heading 1',
+    exec: (c) => c.toggleHeading({ level: 1 }),
+    active: ['heading', { level: 1 }],
+  },
+  {
     icon: 'format_h2',
-    tip: 'Heading',
+    tip: 'Heading 2',
     exec: (c) => c.toggleHeading({ level: 2 }),
     active: ['heading', { level: 2 }],
   },
+  {
+    icon: 'format_h3',
+    tip: 'Heading 3',
+    exec: (c) => c.toggleHeading({ level: 3 }),
+    active: ['heading', { level: 3 }],
+  },
+  { divider: true },
   {
     icon: 'format_list_bulleted',
     tip: 'Bullet list',
@@ -44,23 +74,35 @@ const TOOLS: Tool[] = [
     active: ['orderedList'],
   },
   { icon: 'format_quote', tip: 'Quote', exec: (c) => c.toggleBlockquote(), active: ['blockquote'] },
+  {
+    icon: 'code_blocks',
+    tip: 'Code block',
+    exec: (c) => c.toggleCodeBlock(),
+    active: ['codeBlock'],
+  },
+  { divider: true },
+  { icon: 'horizontal_rule', tip: 'Horizontal rule', exec: (c) => c.setHorizontalRule() },
 ];
 
 @Component({
   selector: 'nit-editor-toolbar',
   imports: [MatButtonModule, MatIconModule, MatTooltipModule],
   template: `
-    @for (tool of tools; track tool.icon) {
-      <button
-        matIconButton
-        [matTooltip]="tool.tip"
-        [attr.aria-label]="tool.tip"
-        [class.active]="isOn(tool)"
-        [disabled]="isDisabled(tool)"
-        (click)="run(tool)"
-      >
-        <mat-icon>{{ tool.icon }}</mat-icon>
-      </button>
+    @for (item of tools; track $index) {
+      @if (isDivider(item)) {
+        <span class="divider"></span>
+      } @else {
+        <button
+          matIconButton
+          [matTooltip]="item.tip"
+          [attr.aria-label]="item.tip"
+          [class.active]="isOn(item)"
+          [disabled]="isDisabled(item)"
+          (click)="run(item)"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+        </button>
+      }
     }
   `,
   styles: `
@@ -70,6 +112,13 @@ const TOOLS: Tool[] = [
     .active {
       background: var(--mat-sys-secondary-container);
       color: var(--mat-sys-on-secondary-container);
+    }
+    .divider {
+      inline-size: 1px;
+      block-size: 1.5rem;
+      align-self: center;
+      background: var(--mat-sys-outline-variant);
+      margin-inline: 0.125rem;
     }
   `,
 })
@@ -88,6 +137,8 @@ export class EditorToolbar {
       onCleanup(() => editor.off('transaction', bump));
     });
   }
+
+  protected readonly isDivider = isDivider;
 
   protected run(tool: Tool): void {
     tool.exec(this.editor().chain().focus()).run();
