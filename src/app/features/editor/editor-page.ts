@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
+import { Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,6 +25,7 @@ import {
 } from './fix-dialog';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
+import { analyzeReadability } from './readability';
 import { SettingsDialog, type SettingsDialogData } from './settings-dialog';
 import { buildTextIndex, locateFindings, type UiFinding } from './text-index';
 
@@ -68,8 +69,9 @@ export class EditorPage {
   protected readonly checking = signal(false);
   protected readonly stale = signal(false);
   protected readonly words = signal(0);
-  /** Flat document text, feeding the readability scores in settings. */
+  /** Flat document text, feeding the readability scores. */
   private readonly plain = signal('');
+  protected readonly readability = computed(() => analyzeReadability(this.plain()));
 
   constructor() {
     afterNextRender(() => this.createEditor());
