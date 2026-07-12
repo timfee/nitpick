@@ -87,6 +87,34 @@ body {
     padding-inline-start: 1rem;
     color: var(--mat-sys-on-surface-variant);
   }
+
+  code {
+    background: var(--mat-sys-surface-container-high);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Liberation Mono', monospace;
+    font-size: 0.875em;
+  }
+
+  pre {
+    background: var(--mat-sys-surface-container-high);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    overflow-x: auto;
+
+    code {
+      background: none;
+      padding: 0;
+      font-size: 0.875rem;
+      line-height: 1.5;
+    }
+  }
+
+  hr {
+    border: none;
+    border-block-start: 1px solid var(--mat-sys-outline-variant);
+    margin-block: 1.5rem;
+  }
 }
 
 /* Severity to color, shared by inline decorations and finding cards. */
