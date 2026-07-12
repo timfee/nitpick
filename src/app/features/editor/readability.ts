@@ -1,7 +1,7 @@
 /**
  * The readability metrics from the Vale "Readability" style package
- * (errata-ai/Readability), computed locally so the settings screen can show
- * live scores without a model call.
+ * (errata-ai/Readability), computed locally so the status bar can show live
+ * scores without a model call.
  */
 
 export interface ReadabilityGrade {

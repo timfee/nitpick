@@ -27,19 +27,15 @@ import { Auth } from '../../core/auth';
 import { LintApi } from '../../core/lint-api';
 import { StyleSettings } from '../../core/style-settings';
 import { AccountMenu } from './account-menu';
+import { blockStart, buildFixGroups, type FixGroup } from './blocks';
 import { EditorToolbar } from './editor-toolbar';
-import {
-  FixDialog,
-  buildFixGroups,
-  type FixDialogData,
-  type FixDialogResult,
-  type FixGroup,
-} from './fix-dialog';
+import { FixDialog, type FixDialogData } from './fix-dialog';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
 import { LintPopover } from './lint-popover';
 import { analyzeReadability } from './readability';
 import { SettingsDialog } from './settings-dialog';
+import { StatusBar } from './status-bar';
 import { buildTextIndex, locateFindings, type UiFinding } from './text-index';
 
 interface PopoverState {
@@ -71,6 +67,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
     EditorToolbar,
     FindingsPanel,
     LintPopover,
+    StatusBar,
   ],
   templateUrl: './editor-page.html',
   styleUrl: './editor-page.scss',
@@ -130,14 +127,10 @@ export class EditorPage {
 
   /** How many findings sit in the same paragraph as `pos`. */
   private siblingCount(state: EditorState, pos: number): number {
-    const blockOf = (p: number) => {
-      const $p = state.doc.resolve(p);
-      return $p.start($p.depth);
-    };
-    const block = blockOf(pos);
+    const block = blockStart(state, pos);
     return this.findings().filter((f) => {
       const range = lintRangeById(state, f.id);
-      return range && blockOf(range.from) === block;
+      return range && blockStart(state, range.from) === block;
     }).length;
   }
 
@@ -169,9 +162,15 @@ export class EditorPage {
     const index = buildTextIndex(editor.state.doc);
     if (!index.text.trim()) return;
 
+    const styles = this.styleSettings.selections();
+    if (!styles.length) {
+      this.notify('All style packages are off — turn some on in settings.');
+      return;
+    }
+
     this.checking.set(true);
     try {
-      const report = await this.api.check(index.text, this.styleSettings.selections());
+      const report = await this.api.check(index.text, styles);
       const located = locateFindings(report.findings, buildTextIndex(editor.state.doc));
       this.findings.set(located.map((l) => l.finding));
       this.selectedId.set(null);
@@ -198,9 +197,7 @@ export class EditorPage {
     if (!editor) return;
     const range = lintRangeById(editor.state, finding.id);
     if (!range) {
-      this.snackBar.open('That passage changed — run the check again.', undefined, {
-        duration: 4000,
-      });
+      this.notify('That passage changed — run the check again.');
       return;
     }
     editor
@@ -247,14 +244,14 @@ export class EditorPage {
 
   private async openFixDialog(editor: Editor, groups: FixGroup[]): Promise<void> {
     if (!groups.length) {
-      this.snackBar.open('The text changed — run the check again.', undefined, { duration: 4000 });
+      this.notify('The text changed — run the check again.');
       return;
     }
     // Counted here, not from the dialog result, so closing mid-flow with
     // Escape still reports (and can undo) what was already accepted.
     let fixed = 0;
     let undoSteps = 0;
-    const ref = this.dialog.open<FixDialog, FixDialogData, FixDialogResult>(FixDialog, {
+    const ref = this.dialog.open<FixDialog, FixDialogData>(FixDialog, {
       data: {
         editor,
         groups,
@@ -274,6 +271,9 @@ export class EditorPage {
     const snack = this.snackBar.open(`Fixed ${fixed} ${noun}.`, 'Undo', { duration: 6000 });
     snack.onAction().subscribe(() => {
       for (let i = 0; i < undoSteps; i++) editor.commands.undo();
+      // The reverted passages have no highlights anymore; flag the results
+      // as stale so the sidebar points at a fresh check.
+      this.stale.set(true);
     });
   }
 
@@ -286,13 +286,18 @@ export class EditorPage {
 
   private handleError(err: unknown): void {
     if (err instanceof HttpErrorResponse && err.status === 401) {
-      this.snackBar.open('Session expired — sign in again.', undefined, { duration: 4000 });
+      this.notify('Session expired — sign in again.');
       this.auth.signOut();
       return;
     }
     const body = err instanceof HttpErrorResponse ? (err.error as { error?: unknown }) : null;
     const detail = typeof body?.error === 'string' ? body.error : 'Lint check failed — try again.';
-    this.snackBar.open(detail, undefined, { duration: 5000 });
+    this.notify(detail, 5000);
+  }
+
+  /** Transient toast with no action button. */
+  private notify(message: string, duration = 4000): void {
+    this.snackBar.open(message, undefined, { duration });
   }
 }
 
