@@ -37,6 +37,7 @@ SERVICE=$(read_env service)
 PROJECT=$(read_env project)
 REGION=$(read_env region)
 CLIENT_ID=$(read_env googleClientId)
+API_KEY=$(read_env googleApiKey)
 
 echo "Resource set: $ENV_NAME (service=$SERVICE region=$REGION)"
 
@@ -70,6 +71,17 @@ ENABLED=$(gcloud services list --enabled --project "$PROJECT" --format='value(co
 for api in aiplatform.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com; do
   if grep -q "^${api}$" <<< "$ENABLED"; then ok "$api"; else bad "$api not enabled — run scripts/init.sh"; fi
 done
+
+echo "Google Drive"
+if [[ -n "$API_KEY" ]]; then
+  if grep -q "^drive.googleapis.com$" <<< "$ENABLED"; then
+    ok "drive.googleapis.com enabled"
+  else
+    bad "googleApiKey is set but drive.googleapis.com is not enabled — run scripts/init.sh"
+  fi
+else
+  ok "integration off (no googleApiKey) — init.sh prints the setup steps"
+fi
 
 echo "Cloud Run"
 describe() {
