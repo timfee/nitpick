@@ -1,0 +1,17 @@
+<h2 mat-dialog-title>Link</h2>
+<mat-dialog-content>
+  <mat-form-field appearance="outline" class="field">
+    <mat-label>Link URL</mat-label>
+    <input
+      matInput
+      [value]="url()"
+      placeholder="https://example.com"
+      (input)="setUrl($any($event.target).value)"
+      (keydown.enter)="confirm()"
+    />
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Cancel</button>
+  <button matButton="filled" (click)="confirm()">OK</button>
+</mat-dialog-actions>
