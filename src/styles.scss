@@ -3,6 +3,8 @@
 html {
   color-scheme: light dark;
 
+  // Gemini visual language: Google Sans Flex variable font with a light
+  // 375 base, 450 for emphasis, and 550 reserved for strong emphasis.
   @include mat.theme(
     (
       color: (
@@ -11,17 +13,41 @@ html {
       ),
       typography: (
         plain-family: (
+          'Google Sans Flex',
+          'Google Sans',
           system-ui,
           sans-serif,
         ),
         brand-family: (
+          'Google Sans Flex',
+          'Google Sans',
           system-ui,
           sans-serif,
         ),
+        regular-weight: 375,
+        medium-weight: 450,
+        bold-weight: 550,
       ),
       density: 0,
     )
   );
+
+  // Google Sans Flex carries its own spacing; drop M3's Roboto-era tracking.
+  --mat-sys-display-large-tracking: 0;
+  --mat-sys-display-medium-tracking: 0;
+  --mat-sys-display-small-tracking: 0;
+  --mat-sys-headline-large-tracking: 0;
+  --mat-sys-headline-medium-tracking: 0;
+  --mat-sys-headline-small-tracking: 0;
+  --mat-sys-title-large-tracking: 0;
+  --mat-sys-title-medium-tracking: 0;
+  --mat-sys-title-small-tracking: 0;
+  --mat-sys-body-large-tracking: 0;
+  --mat-sys-body-medium-tracking: 0;
+  --mat-sys-body-small-tracking: 0;
+  --mat-sys-label-large-tracking: 0;
+  --mat-sys-label-medium-tracking: 0;
+  --mat-sys-label-small-tracking: 0;
 }
 
 body {
@@ -29,6 +55,18 @@ body {
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
+}
+
+b,
+strong {
+  font-weight: 550;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 450;
 }
 
 /* Tiptap renders its own DOM, so prose styling lives at the global level. */

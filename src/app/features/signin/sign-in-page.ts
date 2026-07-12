@@ -15,7 +15,7 @@ import { LintApi } from '../../core/lint-api';
       <mat-card appearance="outlined">
         <mat-card-header>
           <mat-icon mat-card-avatar>spellcheck</mat-icon>
-          <mat-card-title>Nitpick</mat-card-title>
+          <mat-card-title>Nitpicker</mat-card-title>
           <mat-card-subtitle>Prose linting with Gemini</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
