@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Injectable, PLATFORM_ID, computed, inject, signal } from '@angular/core';
+import { PLATFORM_ID, REQUEST, Service, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 export interface SessionUser {
@@ -19,18 +19,17 @@ declare const google: {
   };
 };
 
-const STORAGE_KEY = 'nitpick.credential';
-let gisLoaded: Promise<void> | undefined;
+/**
+ * The credential lives in a cookie (not sessionStorage) so the server sees
+ * the session too: SSR renders the editor or the sign-in page directly,
+ * with no client-side redirect flash.
+ */
+const COOKIE = 'nitpick.credential';
 
-const loadGis = () =>
-  (gisLoaded ??= new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Could not load Google Sign-In'));
-    document.head.append(script);
-  }));
+const readCookie = (cookies: string | null | undefined): string | null => {
+  const match = cookies?.match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
+  return match ? decodeURIComponent(match[1]) : null;
+};
 
 const decodeUser = (credential: string | null): SessionUser | null => {
   if (!credential) return null;
@@ -44,12 +43,25 @@ const decodeUser = (credential: string | null): SessionUser | null => {
   }
 };
 
-@Injectable({ providedIn: 'root' })
+let gisLoaded: Promise<void> | undefined;
+
+const loadGis = () =>
+  (gisLoaded ??= new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error('Could not load Google Sign-In'));
+    document.head.append(script);
+  }));
+
+@Service()
 export class Auth {
   private readonly router = inject(Router);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private readonly request = inject(REQUEST, { optional: true });
   private readonly credential = signal<string | null>(
-    this.isBrowser ? sessionStorage.getItem(STORAGE_KEY) : null,
+    readCookie(this.isBrowser ? document.cookie : this.request?.headers.get('cookie')),
   );
 
   /** Decoded Google identity, or null when signed out / token expired. */
@@ -65,7 +77,8 @@ export class Auth {
     google.accounts.id.initialize({
       client_id: clientId,
       callback: ({ credential }: { credential: string }) => {
-        sessionStorage.setItem(STORAGE_KEY, credential);
+        const secure = location.protocol === 'https:' ? '; secure' : '';
+        document.cookie = `${COOKIE}=${encodeURIComponent(credential)}; path=/; max-age=3600; samesite=lax${secure}`;
         this.credential.set(credential);
         void this.router.navigateByUrl('/');
       },
@@ -74,7 +87,7 @@ export class Auth {
   }
 
   signOut(): void {
-    sessionStorage.removeItem(STORAGE_KEY);
+    document.cookie = `${COOKIE}=; path=/; max-age=0`;
     this.credential.set(null);
     if (typeof google !== 'undefined') google.accounts.id.disableAutoSelect();
     void this.router.navigateByUrl('/signin');

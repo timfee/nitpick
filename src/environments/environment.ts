@@ -4,7 +4,6 @@
  * src/api/env.ts.
  */
 export const environment = {
-  production: true,
   /** Cloud Run service name for this resource set. */
   service: 'nitpick',
   /** Google Cloud project shared by all resource sets. */
