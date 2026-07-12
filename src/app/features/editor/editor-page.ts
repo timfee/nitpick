@@ -1,13 +1,25 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, DestroyRef, afterNextRender, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  DestroyRef,
+  type ElementRef,
+  afterNextRender,
+  computed,
+  effect,
+  inject,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from '@tiptap/core';
+import type { EditorState } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapEditorDirective } from 'ngx-tiptap';
 import { firstValueFrom } from 'rxjs';
@@ -22,12 +34,23 @@ import {
   buildFixGroups,
   type FixDialogData,
   type FixDialogResult,
+  type FixGroup,
 } from './fix-dialog';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
+import { LintPopover } from './lint-popover';
 import { analyzeReadability } from './readability';
-import { SettingsDialog, type SettingsDialogData } from './settings-dialog';
+import { SettingsDialog } from './settings-dialog';
 import { buildTextIndex, locateFindings, type UiFinding } from './text-index';
+
+interface PopoverState {
+  finding: UiFinding;
+  siblings: number;
+  x: number;
+  y: number;
+}
+
+const POPOVER_WIDTH = 320;
 
 const SAMPLE = `
 <h1>Nitpicker</h1>
@@ -41,6 +64,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
   imports: [
     MatButtonModule,
     MatIconModule,
+    MatMenuModule,
     MatProgressSpinnerModule,
     MatToolbarModule,
     MatTooltipModule,
@@ -48,6 +72,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
     AccountMenu,
     EditorToolbar,
     FindingsPanel,
+    LintPopover,
   ],
   templateUrl: './editor-page.html',
   styleUrl: './editor-page.scss',
@@ -73,9 +98,49 @@ export class EditorPage {
   private readonly plain = signal('');
   protected readonly readability = computed(() => analyzeReadability(this.plain()));
 
+  private readonly main = viewChild<ElementRef<HTMLElement>>('main');
+  /** Bumped per transaction so the popover tracks its highlight. */
+  private readonly tick = signal(0);
+  protected readonly popover = signal<PopoverState | null>(null);
+
   constructor() {
     afterNextRender(() => this.createEditor());
     inject(DestroyRef).onDestroy(() => this.editor()?.destroy());
+    effect(() => this.popover.set(this.computePopover()));
+  }
+
+  /** Anchors the popover under the selected highlight, in scroll-content coordinates. */
+  private computePopover(): PopoverState | null {
+    this.tick();
+    const editor = this.editor();
+    const id = this.selectedId();
+    const host = this.main()?.nativeElement;
+    if (!editor || !id || !host) return null;
+    const finding = this.findings().find((f) => f.id === id);
+    const range = finding && lintRangeById(editor.state, finding.id);
+    if (!finding || !range) return null;
+
+    const coords = editor.view.coordsAtPos(range.from);
+    const rect = host.getBoundingClientRect();
+    const x = Math.max(
+      8,
+      Math.min(coords.left - rect.left + host.scrollLeft, host.clientWidth - POPOVER_WIDTH - 8),
+    );
+    const y = coords.bottom - rect.top + host.scrollTop + 8;
+    return { finding, siblings: this.siblingCount(editor.state, range.from), x, y };
+  }
+
+  /** How many findings sit in the same paragraph as `pos`. */
+  private siblingCount(state: EditorState, pos: number): number {
+    const blockOf = (p: number) => {
+      const $p = state.doc.resolve(p);
+      return $p.start($p.depth);
+    };
+    const block = blockOf(pos);
+    return this.findings().filter((f) => {
+      const range = lintRangeById(state, f.id);
+      return range && blockOf(range.from) === block;
+    }).length;
   }
 
   private createEditor(): void {
@@ -86,6 +151,7 @@ export class EditorPage {
       ],
       content: SAMPLE,
       autofocus: 'end',
+      onTransaction: () => this.tick.update((t) => t + 1),
       onUpdate: ({ editor }) => {
         const text = editor.getText();
         this.plain.set(text);
@@ -157,18 +223,31 @@ export class EditorPage {
   }
 
   protected openSettings(): void {
-    this.dialog.open<SettingsDialog, SettingsDialogData>(SettingsDialog, {
-      data: { text: this.plain },
-      width: 'min(40rem, calc(100vw - 2rem))',
+    this.dialog.open(SettingsDialog, {
+      width: 'min(44rem, calc(100vw - 2rem))',
       maxWidth: 'none',
       autoFocus: 'dialog',
     });
   }
 
-  protected async fixAll(): Promise<void> {
+  protected fixAll(): void {
     const editor = this.editor();
     if (!editor) return;
-    const groups = buildFixGroups(editor.state, this.findings());
+    void this.openFixDialog(editor, buildFixGroups(editor.state, this.findings()));
+  }
+
+  /** Runs the fix workflow on just the paragraph holding `finding`. */
+  protected fixLine(finding: UiFinding): void {
+    const editor = this.editor();
+    if (!editor) return;
+    const groups = buildFixGroups(editor.state, this.findings()).filter((g) =>
+      g.findings.some((f) => f.id === finding.id),
+    );
+    this.selectedId.set(null);
+    void this.openFixDialog(editor, groups);
+  }
+
+  private async openFixDialog(editor: Editor, groups: FixGroup[]): Promise<void> {
     if (!groups.length) {
       this.snackBar.open('The text changed — run the check again.', undefined, { duration: 4000 });
       return;

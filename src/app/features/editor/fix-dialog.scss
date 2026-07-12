@@ -10,31 +10,66 @@ h2[mat-dialog-title] {
   color: var(--mat-sys-on-surface-variant);
   margin-bottom: 0.5rem;
 }
+
 .issues {
-  list-style: none;
-  margin: 1.25rem 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-  li {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.625rem;
-  }
-  /* --severity-color comes from the shared .severity-* classes. */
-  .dot {
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
-    background: var(--severity-color);
-    flex-shrink: 0;
-    margin-top: 0.4375rem;
-  }
-  .msg {
-    font: var(--mat-sys-body-medium);
+  max-height: 10.5rem;
+  overflow-y: auto;
+  margin: 1rem 0 1.25rem;
+}
+table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+th {
+  position: sticky;
+  top: 0;
+  background: var(--mat-sys-surface-container-high);
+  text-align: start;
+  font: var(--mat-sys-label-small);
+  font-weight: inherit;
+  color: var(--mat-sys-on-surface-variant);
+  padding: 0 0.75rem 0.375rem 0;
+}
+td {
+  font: var(--mat-sys-body-small);
+  padding: 0.4375rem 0.75rem 0.4375rem 0;
+  vertical-align: top;
+}
+tbody tr + tr td {
+  border-top: 1px solid var(--mat-sys-outline-variant);
+}
+.c-dot {
+  width: 1.125rem;
+  padding-right: 0;
+}
+/* --severity-color comes from the shared .severity-* classes on the row. */
+.dot {
+  display: block;
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 50%;
+  background: var(--severity-color);
+  margin-top: 0.4375rem;
+}
+.c-text {
+  width: 24%;
+  font-weight: var(--mat-sys-title-medium-weight);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.c-fix {
+  width: 20%;
+  color: var(--mat-sys-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  @media (max-width: 40rem) {
+    display: none;
   }
 }
+
 .panes {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -63,13 +98,11 @@ h2[mat-dialog-title] {
     place-items: center;
   }
   .del {
-    background: color-mix(in srgb, var(--mat-sys-error) 14%, transparent);
+    color: var(--mat-sys-on-surface-variant);
     text-decoration: line-through;
-    text-decoration-color: var(--mat-sys-error);
-    border-radius: 0.25rem;
   }
   .ins {
-    background: color-mix(in srgb, var(--mat-sys-primary) 16%, transparent);
+    background: color-mix(in srgb, var(--mat-sys-primary) 12%, transparent);
     border-radius: 0.25rem;
   }
   .error {

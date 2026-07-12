@@ -2,7 +2,7 @@
 
 <mat-dialog-content>
   <div class="meta">
-    <span>Paragraph {{ paragraph() }} of {{ groupCount }}</span>
+    <span>Line {{ paragraph() }} of {{ groupCount }}</span>
     @if (approved()) {
       <span>{{ approved() }} accepted</span>
     }
@@ -10,18 +10,32 @@
   <mat-progress-bar [value]="progress()" aria-label="Fix progress" />
 
   @if (step(); as s) {
-    <ul class="issues" role="list">
-      @for (f of s.findings; track f.id) {
-        <li [class]="'severity-' + f.severity" [title]="f.severity">
-          <span class="dot" aria-hidden="true"></span>
-          <span class="msg">{{ f.message }}</span>
-        </li>
-      }
-    </ul>
+    <div class="issues" role="region" aria-label="Issues on this line">
+      <table>
+        <thead>
+          <tr>
+            <th class="c-dot"></th>
+            <th class="c-text">Text</th>
+            <th class="c-issue">Issue</th>
+            <th class="c-fix">Replacement</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (f of s.findings; track f.id) {
+            <tr [class]="'severity-' + f.severity" [title]="f.severity">
+              <td class="c-dot"><span class="dot" aria-hidden="true"></span></td>
+              <td class="c-text">{{ f.quote }}</td>
+              <td class="c-issue">{{ f.message }}</td>
+              <td class="c-fix">{{ f.suggestion || '—' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
 
     <div class="panes">
       <section>
-        <h3>Original</h3>
+        <h3>This line</h3>
         <div class="pane">
           @for (seg of originalDiff(); track $index) {
             <span [class.del]="seg.changed">{{ seg.text }}</span>

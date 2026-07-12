@@ -33,11 +33,22 @@
 </mat-toolbar>
 
 <div class="body">
-  <main>
+  <main #main>
     @if (editor(); as ed) {
       <tiptap-editor [editor]="ed" />
     } @else {
       <mat-spinner diameter="32" style="place-self: center" />
+    }
+    @if (popover(); as p) {
+      <nit-lint-popover
+        [finding]="p.finding"
+        [siblings]="p.siblings"
+        [style.left.px]="p.x"
+        [style.top.px]="p.y"
+        (swap)="apply(p.finding)"
+        (fixLine)="fixLine(p.finding)"
+        (ignore)="dismiss(p.finding)"
+      />
     }
   </main>
 
@@ -63,5 +74,29 @@
     <span class="optional">Grade {{ r.grades[0].value }}</span>
   }
   <span class="spacer"></span>
-  <button type="button" class="all-scores" (click)="openSettings()">All scores</button>
+  <button type="button" class="all-scores" [matMenuTriggerFor]="scoresMenu">All scores</button>
 </footer>
+
+<mat-menu #scoresMenu xPosition="before">
+  <div class="scores-panel">
+    @if (readability(); as r) {
+      <div class="ease">
+        <span class="ease-value">{{ r.ease.value }}</span>
+        <div class="ease-meta">
+          <span class="ease-name">Flesch reading ease</span>
+          <span class="ease-verdict">{{ r.ease.verdict }}</span>
+        </div>
+      </div>
+      <div class="grades">
+        @for (g of r.grades; track g.id) {
+          <div class="grade" [matTooltip]="g.hint">
+            <span class="grade-name">{{ g.label }}</span>
+            <span class="grade-value">{{ g.value }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="scores-empty">Not enough text to score.</p>
+    }
+  </div>
+</mat-menu>
