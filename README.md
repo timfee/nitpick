@@ -28,6 +28,20 @@ init prints instructions. Add the service URL and `http://localhost:4200` as
 authorized JavaScript origins, then put the ID in
 `src/environments/environment*.ts`.
 
+## Continuous deployment
+
+Merges to `main` deploy to Cloud Run through `.github/workflows/deploy.yml`,
+authenticating with Workload Identity Federation — keyless, no secrets in
+GitHub. One-time setup, run with your own gcloud login:
+
+```bash
+scripts/setup-deploy.sh      # WIF pool + provider, deploy service account,
+                             # GitHub repository variables (via gh if present)
+```
+
+Until that has been run, the workflow fails fast with a pointer here.
+Manual deploys keep working: `scripts/init.sh` re-deploys from source.
+
 ## Configuration
 
 Environment variables override the environment-file defaults.
