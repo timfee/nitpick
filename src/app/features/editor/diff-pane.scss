@@ -20,6 +20,12 @@ h3 {
     display: grid;
     place-items: center;
   }
+  // De-emphasized original-text pane: the suggested pane keeps full-strength
+  // surface-container-low + on-surface text so attention lands there.
+  &.muted {
+    background: var(--mat-sys-surface);
+    color: var(--mat-sys-on-surface-variant);
+  }
   .del {
     color: var(--mat-sys-on-surface-variant);
     text-decoration: line-through;

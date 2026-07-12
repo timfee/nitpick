@@ -17,7 +17,7 @@
 
 @for (f of findings(); track f.id) {
   <mat-card
-    appearance="outlined"
+    appearance="filled"
     [class]="'severity-' + f.severity"
     [class.selected]="f.id === selectedId()"
     (click)="selectFinding.emit(f.id)"
@@ -26,6 +26,7 @@
       <mat-card-title>{{ f.category }}</mat-card-title>
       <button
         matIconButton
+        class="dismiss"
         matTooltip="Dismiss"
         aria-label="Dismiss finding"
         (click)="dismissFinding.emit(f); $event.stopPropagation()"
@@ -37,13 +38,11 @@
       <blockquote>{{ f.quote }}</blockquote>
       <p>{{ f.message }}</p>
       @if (f.suggestion) {
-        <code>{{ f.suggestion }}</code>
+        <div class="suggestion-row">
+          <span class="suggestion-chip"><span class="arrow">→</span> {{ f.suggestion }}</span>
+          <button matButton (click)="applyFinding.emit(f); $event.stopPropagation()">Apply</button>
+        </div>
       }
     </mat-card-content>
-    @if (f.suggestion) {
-      <mat-card-actions align="end">
-        <button matButton (click)="applyFinding.emit(f); $event.stopPropagation()">Apply</button>
-      </mat-card-actions>
-    }
   </mat-card>
 }

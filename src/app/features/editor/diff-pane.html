@@ -1,5 +1,5 @@
 <h3>{{ heading() }}</h3>
-<div class="pane" [class.busy]="loading()">
+<div class="pane" [class.busy]="loading()" [class.muted]="change() === 'del'">
   @if (loading()) {
     <mat-spinner diameter="24" />
   } @else if (error(); as e) {

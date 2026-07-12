@@ -1,6 +1,6 @@
 <p class="msg">{{ finding().message }}</p>
 @if (finding().suggestion) {
-  <code>{{ finding().suggestion }}</code>
+  <span class="suggestion-chip"><span class="arrow">→</span> {{ finding().suggestion }}</span>
 }
 <div class="actions">
   @if (finding().suggestion) {
