@@ -10,6 +10,17 @@
     <mat-icon>download</mat-icon>
     Download as markdown
   </button>
+  @if (driveEnabled()) {
+    <mat-divider />
+    <button mat-menu-item [disabled]="driveBusy()" (click)="openFromDrive()">
+      <mat-icon>add_to_drive</mat-icon>
+      Open from Google Drive
+    </button>
+    <button mat-menu-item [disabled]="driveBusy()" (click)="saveToDrive()">
+      <mat-icon>cloud_upload</mat-icon>
+      Save to Google Drive
+    </button>
+  }
 </mat-menu>
 <input
   #fileInput

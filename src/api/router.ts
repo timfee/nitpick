@@ -10,7 +10,7 @@ import { lintText } from './lint';
 export const apiRouter: Router = Router();
 
 apiRouter.get('/config', (_req, res) => {
-  res.json({ clientId: env.clientId, model: env.model });
+  res.json({ clientId: env.clientId, model: env.model, apiKey: env.apiKey });
 });
 
 apiRouter.post('/lint', json({ limit: '256kb' }), requireUser, async (req, res) => {

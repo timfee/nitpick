@@ -2,6 +2,8 @@ import { isPlatformBrowser } from '@angular/common';
 import { PLATFORM_ID, REQUEST, Service, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
+import { loadGis } from './gis';
+
 export interface SessionUser {
   email: string;
   name: string;
@@ -42,18 +44,6 @@ const decodeUser = (credential: string | null): SessionUser | null => {
     return null;
   }
 };
-
-let gisLoaded: Promise<void> | undefined;
-
-const loadGis = () =>
-  (gisLoaded ??= new Promise((resolve, reject) => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Could not load Google Sign-In'));
-    document.head.append(script);
-  }));
 
 @Service()
 export class Auth {

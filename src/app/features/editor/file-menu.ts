@@ -1,12 +1,31 @@
-import { Component, type ElementRef, input, output, viewChild } from '@angular/core';
+import {
+  Component,
+  type ElementRef,
+  afterNextRender,
+  inject,
+  input,
+  output,
+  signal,
+  viewChild,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from '@tiptap/core';
 
-/** Kebab-case slug from the first heading or first line, used as the download filename. */
-function slugify(markdown: string): string {
+import { environment } from '../../../environments/environment';
+import { Drive } from '../../core/drive';
+import { DrivePicker } from '../../core/drive-picker';
+import { LintApi } from '../../core/lint-api';
+
+/**
+ * Kebab-case slug from the first heading or first line. Used as the download
+ * filename and, unqualified, as the default title for a new Google Doc.
+ */
+export function slugify(markdown: string): string {
   const firstLine = markdown
     .split('\n')
     .map((line) => line.trim())
@@ -20,13 +39,14 @@ function slugify(markdown: string): string {
 }
 
 /**
- * Toolbar menu for markdown import/export. Dumb by design: the editor comes
- * in as a signal input, and a successful import is reported via `imported`
- * so the page can reset lint state (findings point at text that's now gone).
+ * Toolbar menu for markdown import/export and (when a Picker API key is
+ * configured) Google Drive open/save. Dumb by design: the editor comes in as
+ * a signal input, and a successful import is reported via `imported` so the
+ * page can reset lint state (findings point at text that's now gone).
  */
 @Component({
   selector: 'nit-file-menu',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule],
+  imports: [MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatTooltipModule],
   templateUrl: './file-menu.html',
   styleUrl: './file-menu.scss',
 })
@@ -34,7 +54,33 @@ export class FileMenu {
   readonly editor = input.required<Editor>();
   readonly imported = output<void>();
 
+  private readonly api = inject(LintApi);
+  private readonly drive = inject(Drive);
+  private readonly picker = inject(DrivePicker);
+  private readonly snackBar = inject(MatSnackBar);
+
   private readonly fileInput = viewChild.required<ElementRef<HTMLInputElement>>('fileInput');
+
+  /** Drive menu items only render once a Picker API key is actually configured. */
+  protected readonly driveEnabled = signal(false);
+  /** Guards against double-clicks while a Drive round trip is in flight. */
+  protected readonly driveBusy = signal(false);
+
+  constructor() {
+    afterNextRender(() => void this.checkDriveEnabled());
+  }
+
+  private async checkDriveEnabled(): Promise<void> {
+    try {
+      // The build usually bakes the key in; the API call is only a fallback
+      // for deployments configured purely through environment variables —
+      // same pattern as the OAuth client ID in sign-in-page.ts.
+      const apiKey = environment.googleApiKey || (await this.api.config()).apiKey;
+      this.driveEnabled.set(!!apiKey);
+    } catch {
+      this.driveEnabled.set(false);
+    }
+  }
 
   protected triggerImport(): void {
     this.fileInput().nativeElement.click();
@@ -59,5 +105,50 @@ export class FileMenu {
     anchor.download = `${slugify(markdown)}.md`;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  protected async openFromDrive(): Promise<void> {
+    if (this.driveBusy()) return;
+    this.driveBusy.set(true);
+    try {
+      const picked = await this.picker.pickDocument();
+      if (!picked) return;
+      const markdown = await this.drive.exportDocAsMarkdown(picked.id);
+      this.editor().commands.setContent(markdown, { contentType: 'markdown' });
+      this.imported.emit();
+      this.drive.remember(picked.id, picked.name);
+      this.notify(`Opened ${picked.name} from Drive.`);
+    } catch (err) {
+      this.driveError(err);
+    } finally {
+      this.driveBusy.set(false);
+    }
+  }
+
+  protected async saveToDrive(): Promise<void> {
+    if (this.driveBusy()) return;
+    this.driveBusy.set(true);
+    try {
+      const markdown = this.editor().getMarkdown();
+      const remembered = this.drive.remembered();
+      const name = remembered?.name ?? slugify(markdown);
+      const fileId = await this.drive.saveMarkdownAsDoc(name, markdown, remembered?.fileId);
+      this.drive.remember(fileId, name);
+      this.notify(`Saved to Drive as ${name}.`);
+    } catch (err) {
+      this.driveError(err);
+    } finally {
+      this.driveBusy.set(false);
+    }
+  }
+
+  private driveError(err: unknown): void {
+    console.error('[drive]', err);
+    this.notify('Google Drive said no — try again.');
+  }
+
+  /** Transient toast with no action button. */
+  private notify(message: string): void {
+    this.snackBar.open(message, undefined, { duration: 4000 });
   }
 }

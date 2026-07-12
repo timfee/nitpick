@@ -8,6 +8,7 @@ import { Auth } from './auth';
 export interface ApiConfig {
   clientId: string;
   model: string;
+  apiKey: string;
 }
 
 @Service()

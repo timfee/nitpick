@@ -4,6 +4,12 @@ export const environment = {
   project: 'nitpick-6an5rp',
   region: 'us-central1',
   googleClientId: '204060019607-fl1ehebdji768hn3t7o2h0ngmalp4ha4.apps.googleusercontent.com',
+  /**
+   * Public, referrer-restricted browser key for the Google Picker (Drive file
+   * chooser) only. Not a secret — restricted by HTTP referrer in Cloud
+   * Console, safe to ship. Leave blank to hide the Drive menu items.
+   */
+  googleApiKey: '',
   geminiModel: 'gemini-3.1-flash',
   vertexLocation: 'global',
 };
