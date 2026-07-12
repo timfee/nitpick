@@ -13,7 +13,7 @@ declare const google: {
   accounts: {
     id: {
       initialize(config: object): void;
-      renderButton(host: HTMLElement, options: object): void;
+      prompt(): void;
       disableAutoSelect(): void;
     };
   };
@@ -71,11 +71,12 @@ export class Auth {
     return this.credential();
   }
 
-  /** Renders the "Sign in with Google" button; resolves the session on tap. */
-  async renderButton(host: HTMLElement, clientId: string): Promise<void> {
+  /** Loads Google Identity Services and registers the credential callback. */
+  async initSignIn(clientId: string): Promise<void> {
     await loadGis();
     google.accounts.id.initialize({
       client_id: clientId,
+      use_fedcm_for_prompt: true,
       callback: ({ credential }: { credential: string }) => {
         const secure = location.protocol === 'https:' ? '; secure' : '';
         document.cookie = `${COOKIE}=${encodeURIComponent(credential)}; path=/; max-age=3600; samesite=lax${secure}`;
@@ -83,7 +84,11 @@ export class Auth {
         void this.router.navigateByUrl('/');
       },
     });
-    google.accounts.id.renderButton(host, { theme: 'outline', size: 'large', shape: 'pill' });
+  }
+
+  /** Opens the Google sign-in prompt; call from a user gesture. */
+  promptSignIn(): void {
+    google.accounts.id.prompt();
   }
 
   signOut(): void {

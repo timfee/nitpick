@@ -4,88 +4,19 @@
     Nitpick
   </span>
 
-  @if (editor(); as ed) {
-    <button
-      matIconButton
-      matTooltip="Undo"
-      aria-label="Undo"
-      [disabled]="!canUndo()"
-      (click)="ed.chain().focus().undo().run()"
-    >
-      <mat-icon>undo</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Redo"
-      aria-label="Redo"
-      [disabled]="!canRedo()"
-      (click)="ed.chain().focus().redo().run()"
-    >
-      <mat-icon>redo</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Bold"
-      aria-label="Bold"
-      [class.active]="isActive('bold')"
-      (click)="ed.chain().focus().toggleBold().run()"
-    >
-      <mat-icon>format_bold</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Italic"
-      aria-label="Italic"
-      [class.active]="isActive('italic')"
-      (click)="ed.chain().focus().toggleItalic().run()"
-    >
-      <mat-icon>format_italic</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Strikethrough"
-      aria-label="Strikethrough"
-      [class.active]="isActive('strike')"
-      (click)="ed.chain().focus().toggleStrike().run()"
-    >
-      <mat-icon>strikethrough_s</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Heading"
-      aria-label="Heading"
-      [class.active]="isActive('heading', { level: 2 })"
-      (click)="ed.chain().focus().toggleHeading({ level: 2 }).run()"
-    >
-      <mat-icon>format_h2</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Bullet list"
-      aria-label="Bullet list"
-      [class.active]="isActive('bulletList')"
-      (click)="ed.chain().focus().toggleBulletList().run()"
-    >
-      <mat-icon>format_list_bulleted</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Numbered list"
-      aria-label="Numbered list"
-      [class.active]="isActive('orderedList')"
-      (click)="ed.chain().focus().toggleOrderedList().run()"
-    >
-      <mat-icon>format_list_numbered</mat-icon>
-    </button>
-    <button
-      matIconButton
-      matTooltip="Quote"
-      aria-label="Quote"
-      [class.active]="isActive('blockquote')"
-      (click)="ed.chain().focus().toggleBlockquote().run()"
-    >
-      <mat-icon>format_quote</mat-icon>
-    </button>
+  @if (editor()) {
+    @for (tool of tools; track tool.icon) {
+      <button
+        matIconButton
+        [matTooltip]="tool.tip"
+        [attr.aria-label]="tool.tip"
+        [class.active]="isOn(tool)"
+        [disabled]="isDisabled(tool)"
+        (click)="run(tool)"
+      >
+        <mat-icon>{{ tool.icon }}</mat-icon>
+      </button>
+    }
   }
 
   <span class="spacer"></span>
