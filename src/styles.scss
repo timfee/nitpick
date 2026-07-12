@@ -33,21 +33,25 @@ html {
   );
 
   // Google Sans Flex carries its own spacing; drop M3's Roboto-era tracking.
-  --mat-sys-display-large-tracking: 0;
-  --mat-sys-display-medium-tracking: 0;
-  --mat-sys-display-small-tracking: 0;
-  --mat-sys-headline-large-tracking: 0;
-  --mat-sys-headline-medium-tracking: 0;
-  --mat-sys-headline-small-tracking: 0;
-  --mat-sys-title-large-tracking: 0;
-  --mat-sys-title-medium-tracking: 0;
-  --mat-sys-title-small-tracking: 0;
-  --mat-sys-body-large-tracking: 0;
-  --mat-sys-body-medium-tracking: 0;
-  --mat-sys-body-small-tracking: 0;
-  --mat-sys-label-large-tracking: 0;
-  --mat-sys-label-medium-tracking: 0;
-  --mat-sys-label-small-tracking: 0;
+  @include mat.theme-overrides(
+    (
+      display-large-tracking: 0,
+      display-medium-tracking: 0,
+      display-small-tracking: 0,
+      headline-large-tracking: 0,
+      headline-medium-tracking: 0,
+      headline-small-tracking: 0,
+      title-large-tracking: 0,
+      title-medium-tracking: 0,
+      title-small-tracking: 0,
+      body-large-tracking: 0,
+      body-medium-tracking: 0,
+      body-small-tracking: 0,
+      label-large-tracking: 0,
+      label-medium-tracking: 0,
+      label-small-tracking: 0,
+    )
+  );
 }
 
 body {
@@ -55,18 +59,6 @@ body {
   background: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-}
-
-b,
-strong {
-  font-weight: 550;
-}
-
-h1,
-h2,
-h3,
-h4 {
-  font-weight: 450;
 }
 
 /* Tiptap renders its own DOM, so prose styling lives at the global level. */
@@ -78,6 +70,17 @@ h4 {
   outline: none;
   min-height: 100%;
 
+  b,
+  strong {
+    font-weight: 550;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 450;
+  }
+
   blockquote {
     border-inline-start: 3px solid var(--mat-sys-outline-variant);
     margin-inline: 0;
@@ -86,22 +89,24 @@ h4 {
   }
 }
 
+/* Severity to color, shared by inline decorations and finding cards. */
+.severity-suggestion {
+  --severity-color: var(--mat-sys-primary);
+}
+.severity-warning {
+  --severity-color: var(--mat-sys-tertiary);
+}
+.severity-error {
+  --severity-color: var(--mat-sys-error);
+}
+
 /* Inline lint decorations. */
 .lint {
-  --lint-color: var(--mat-sys-primary);
-  background: color-mix(in srgb, var(--lint-color) 12%, transparent);
-  border-bottom: 2px solid var(--lint-color);
+  background: color-mix(in srgb, var(--severity-color) 12%, transparent);
+  border-bottom: 2px solid var(--severity-color);
   cursor: pointer;
 
-  &.lint--warning {
-    --lint-color: var(--mat-sys-tertiary);
-  }
-
-  &.lint--error {
-    --lint-color: var(--mat-sys-error);
-  }
-
   &.lint--selected {
-    background: color-mix(in srgb, var(--lint-color) 28%, transparent);
+    background: color-mix(in srgb, var(--severity-color) 28%, transparent);
   }
 }

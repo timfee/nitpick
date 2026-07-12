@@ -32,7 +32,7 @@ const toDecoration = ({ id, from, to, severity }: LintRange, selected: boolean) 
     from,
     to,
     {
-      class: `lint lint--${severity}${selected ? ' lint--selected' : ''}`,
+      class: `lint severity-${severity}${selected ? ' lint--selected' : ''}`,
       'data-lint-id': id,
     },
     { id, severity } satisfies LintSpec,

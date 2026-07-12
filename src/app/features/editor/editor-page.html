@@ -1,26 +1,15 @@
 <mat-toolbar>
-  <span class="brand mat-title-large">
+  <span class="brand">
     <mat-icon>spellcheck</mat-icon>
     Nitpicker
   </span>
 
-  @if (editor()) {
-    @for (tool of tools; track tool.icon) {
-      <button
-        matIconButton
-        [matTooltip]="tool.tip"
-        [attr.aria-label]="tool.tip"
-        [class.active]="isOn(tool)"
-        [disabled]="isDisabled(tool)"
-        (click)="run(tool)"
-      >
-        <mat-icon>{{ tool.icon }}</mat-icon>
-      </button>
-    }
+  @if (editor(); as ed) {
+    <nit-editor-toolbar [editor]="ed" />
   }
 
   <span class="spacer"></span>
-  <span class="words mat-label-medium">{{ words() }} words</span>
+  <span class="words">{{ words() }} words</span>
 
   <button
     matButton="filled"
@@ -36,23 +25,7 @@
     Check prose
   </button>
 
-  <button matIconButton class="account" aria-label="Account" [matMenuTriggerFor]="accountMenu">
-    @if (user()?.picture; as picture) {
-      <img class="avatar" [src]="picture" alt="" referrerpolicy="no-referrer" />
-    } @else {
-      <mat-icon>account_circle</mat-icon>
-    }
-  </button>
-  <mat-menu #accountMenu>
-    <div class="menu-user">
-      <strong>{{ user()?.name }}</strong>
-      <small>{{ user()?.email }}</small>
-    </div>
-    <button mat-menu-item (click)="signOut()">
-      <mat-icon>logout</mat-icon>
-      Sign out
-    </button>
-  </mat-menu>
+  <nit-account-menu />
 </mat-toolbar>
 
 <div class="body">
