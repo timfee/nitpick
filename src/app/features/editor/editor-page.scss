@@ -13,6 +13,15 @@ mat-toolbar {
     margin-inline-end: 1.5rem;
     font: var(--mat-sys-title-large);
     font-weight: var(--mat-sys-title-medium-weight);
+    flex-shrink: 0;
+    @media (max-width: 60rem) {
+      margin-inline-end: 0.75rem;
+    }
+    @media (max-width: 40rem) {
+      .brand-label {
+        display: none;
+      }
+    }
   }
   .spacer {
     flex: 1;
@@ -23,6 +32,13 @@ mat-toolbar {
     // Progress only shows while disabled, so tint the spinner for the
     // disabled container rather than the default on-primary.
     --mat-button-filled-progress-active-indicator-color: var(--mat-sys-primary);
+  }
+  // The toolbar row itself must not shrink; only nit-editor-toolbar's inner
+  // strip is allowed to give up width via its own overflow-x.
+  nit-file-menu,
+  nit-account-menu,
+  > button {
+    flex-shrink: 0;
   }
 }
 .body {
@@ -40,6 +56,9 @@ main {
   overflow-y: auto;
   padding: 2rem 1.5rem;
   display: grid;
+  // Reserve the scrollbar track so a growing document doesn't shift the
+  // prose column when the scrollbar appears.
+  scrollbar-gutter: stable;
 }
 nit-findings-panel {
   background: var(--mat-sys-surface-container-low);

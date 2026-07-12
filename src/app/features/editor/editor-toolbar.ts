@@ -138,7 +138,23 @@ const TOOLS: ToolbarItem[] = [
   `,
   styles: `
     :host {
-      display: contents;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-width: 0;
+      overflow-x: auto;
+      // Material's 48px touch targets outgrow the 40px buttons; without this
+      // padding the strip is always scrollable by the 4px they poke out.
+      padding: 0.25rem;
+      // The strip pans on overflow; a scrollbar under icon buttons reads as
+      // broken chrome, so hide it (wheel, drag, and tab-to-focus still scroll).
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+    button {
+      flex-shrink: 0;
     }
     .active {
       background: var(--mat-sys-secondary-container);
@@ -153,6 +169,7 @@ const TOOLS: ToolbarItem[] = [
       // around a divider read as ~1rem, distinct from the 0.5rem within a
       // tool group.
       margin-inline: 0.5rem;
+      flex-shrink: 0;
     }
   `,
 })
