@@ -4,7 +4,15 @@
     <span class="sep optional" aria-hidden="true"></span>
     <span class="stat optional"><b>{{ r.sentences }}</b> sentences</span>
     <span class="sep" aria-hidden="true"></span>
-    <span class="stat" [matTooltip]="easeTooltip(r)">
+    <span
+      class="stat metric"
+      tabindex="0"
+      (mouseenter)="showEase($event, r)"
+      (mouseleave)="hideCard()"
+      (focus)="showEase($event, r)"
+      (blur)="hideCard()"
+      (keydown.escape)="hideCard()"
+    >
       Ease
       @if (r.ease.status === 'ok') {
         <b>{{ r.ease.value }}</b>
@@ -14,7 +22,15 @@
     </span>
     @for (g of r.grades; track g.id) {
       <span class="sep optional" aria-hidden="true"></span>
-      <span class="stat optional" [matTooltip]="gradeTooltip(g)">
+      <span
+        class="stat metric optional"
+        tabindex="0"
+        (mouseenter)="showGrade($event, g)"
+        (mouseleave)="hideCard()"
+        (focus)="showGrade($event, g)"
+        (blur)="hideCard()"
+        (keydown.escape)="hideCard()"
+      >
         {{ g.short }}
         @if (g.status === 'ok') {
           <b>{{ g.value }}</b>
@@ -25,3 +41,42 @@
     }
   }
 </footer>
+
+@if (card(); as c) {
+  <div class="hovercard" role="tooltip" [style.left.px]="c.left" [style.bottom.px]="c.bottom">
+    <div class="head">
+      <span class="label">{{ c.label }}</span>
+      <span
+        class="value"
+        [class.ok]="c.status === 'ok'"
+        [class.high]="c.status === 'high'"
+        [class.severe]="c.status === 'severe'"
+      >
+        {{ c.value }}
+      </span>
+    </div>
+    <p class="hint">{{ c.hint }}</p>
+    <div class="scale">
+      <div class="track">
+        @for (z of c.zones; track z.from) {
+          <div
+            class="zone"
+            [class.ok]="z.status === 'ok'"
+            [class.high]="z.status === 'high'"
+            [class.severe]="z.status === 'severe'"
+            [style.left.%]="z.from"
+            [style.width.%]="z.to - z.from"
+          ></div>
+        }
+        <div class="tick" [style.left.%]="c.limit"></div>
+      </div>
+      <div class="marker" [style.left.%]="c.marker"></div>
+    </div>
+    <div class="ends">
+      <span>{{ c.endLeft }}</span>
+      <span class="target" [style.left.%]="c.limit">{{ c.limitLabel }}</span>
+      <span>{{ c.endRight }}</span>
+    </div>
+    <p class="aim">{{ c.aim }} · <span class="note">{{ c.note }}</span></p>
+  </div>
+}

@@ -24,6 +24,14 @@
     font-variant-numeric: tabular-nums;
     color: var(--mat-sys-on-surface);
   }
+  .stat.metric {
+    cursor: default;
+    border-radius: 0.25rem;
+    &:focus-visible {
+      outline: 2px solid var(--mat-sys-primary);
+      outline-offset: 2px;
+    }
+  }
   .stat .badge {
     font-weight: var(--mat-sys-title-medium-weight);
     font-variant-numeric: tabular-nums;
@@ -40,5 +48,133 @@
     .optional {
       display: none;
     }
+  }
+}
+
+/* Fixed-position so the card escapes the bar's overflow clip; opens upward. */
+.hovercard {
+  position: fixed;
+  z-index: 20;
+  width: 17rem;
+  padding: 0.75rem 0.875rem 0.625rem;
+  border-radius: 0.75rem;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface);
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  pointer-events: none;
+  white-space: normal;
+  animation: hovercard-in 120ms ease-out;
+  @media (prefers-color-scheme: dark) {
+    box-shadow: none;
+    border: 1px solid color-mix(in srgb, var(--mat-sys-on-surface) 12%, transparent);
+  }
+
+  .head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .label {
+    font: var(--mat-sys-label-medium);
+    color: var(--mat-sys-on-surface-variant);
+  }
+  .value {
+    font: var(--mat-sys-title-medium);
+    font-variant-numeric: tabular-nums;
+    &.ok {
+      color: var(--mat-sys-primary);
+    }
+    &.high {
+      color: var(--mat-sys-tertiary);
+    }
+    &.severe {
+      color: var(--mat-sys-error);
+    }
+  }
+  .hint {
+    margin: 0.25rem 0 0.75rem;
+    font: var(--mat-sys-body-small);
+    color: var(--mat-sys-on-surface-variant);
+  }
+
+  .scale {
+    position: relative;
+    height: 0.375rem;
+    .track {
+      position: absolute;
+      inset: 0;
+      border-radius: 0.1875rem;
+      overflow: hidden;
+    }
+    .zone {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      &.ok {
+        background: color-mix(in srgb, var(--mat-sys-primary) 30%, transparent);
+      }
+      &.high {
+        background: color-mix(in srgb, var(--mat-sys-tertiary) 30%, transparent);
+      }
+      &.severe {
+        background: color-mix(in srgb, var(--mat-sys-error) 30%, transparent);
+      }
+    }
+    .tick {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      transform: translateX(-50%);
+      background: var(--mat-sys-on-surface);
+    }
+  }
+  /* Ink marker with a surface ring: reads as "you are here" in any zone.
+     It overlays .track so it isn't clipped at the track's ends. */
+  .scale .marker {
+    position: absolute;
+    top: 50%;
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--mat-sys-on-surface);
+    outline: 2px solid var(--mat-sys-surface-container);
+  }
+
+  .ends {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.25rem;
+    font: var(--mat-sys-label-small);
+    color: var(--mat-sys-on-surface-variant);
+    .target {
+      position: absolute;
+      transform: translateX(-50%);
+      color: var(--mat-sys-on-surface);
+      font-variant-numeric: tabular-nums;
+    }
+  }
+  .aim {
+    margin: 0.5rem 0 0;
+    font: var(--mat-sys-label-small);
+    color: var(--mat-sys-on-surface-variant);
+    .note {
+      color: var(--mat-sys-on-surface);
+      font-weight: var(--mat-sys-title-medium-weight);
+    }
+  }
+}
+
+@keyframes hovercard-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
