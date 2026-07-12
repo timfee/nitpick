@@ -227,10 +227,8 @@ export class EditorPage {
       this.auth.signOut();
       return;
     }
-    const detail =
-      err instanceof HttpErrorResponse && typeof err.error?.error === 'string'
-        ? err.error.error
-        : 'Lint check failed — try again.';
+    const body = err instanceof HttpErrorResponse ? (err.error as { error?: unknown }) : null;
+    const detail = typeof body?.error === 'string' ? body.error : 'Lint check failed — try again.';
     this.snackBar.open(detail, undefined, { duration: 5000 });
   }
 }

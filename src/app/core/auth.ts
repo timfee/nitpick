@@ -33,10 +33,11 @@ const loadGis = () =>
   }));
 
 const decodeUser = (credential: string | null): SessionUser | null => {
+  if (!credential) return null;
   try {
     const claims = JSON.parse(
-      atob(credential!.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')),
-    );
+      atob(credential.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')),
+    ) as SessionUser;
     return claims.exp * 1000 > Date.now() ? claims : null;
   } catch {
     return null;
@@ -66,7 +67,7 @@ export class Auth {
       callback: ({ credential }: { credential: string }) => {
         sessionStorage.setItem(STORAGE_KEY, credential);
         this.credential.set(credential);
-        this.router.navigateByUrl('/');
+        void this.router.navigateByUrl('/');
       },
     });
     google.accounts.id.renderButton(host, { theme: 'outline', size: 'large', shape: 'pill' });
@@ -76,6 +77,6 @@ export class Auth {
     sessionStorage.removeItem(STORAGE_KEY);
     this.credential.set(null);
     if (typeof google !== 'undefined') google.accounts.id.disableAutoSelect();
-    this.router.navigateByUrl('/signin');
+    void this.router.navigateByUrl('/signin');
   }
 }

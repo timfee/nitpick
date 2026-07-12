@@ -61,7 +61,7 @@ export class SignInPage {
 
   private async init(): Promise<void> {
     if (this.auth.user()) {
-      this.router.navigateByUrl('/');
+      void this.router.navigateByUrl('/');
       return;
     }
     try {

@@ -1,115 +1,108 @@
 #!/usr/bin/env bash
-# Verifies the Google Cloud resources Nitpick needs and creates what's missing.
-# Everything is idempotent; run it as often as you like.
+# Verifies the Google Cloud resources Nitpick needs are present and
+# correctly configured. Read-only: creates nothing. When something is
+# missing it advises running scripts/init.sh.
 #
 # Usage:
-#   scripts/doctor.sh [--project PROJECT_ID] [--region REGION] [--deploy]
+#   scripts/doctor.sh [--env dev|prod]
 #
-#   --deploy   also build and deploy the Cloud Run service from source
-#
-# Requires: gcloud, authenticated (gcloud auth login).
+# Requires: gcloud (authenticated via `gcloud auth login`), node >= 24.
 
-set -euo pipefail
+set -uo pipefail
+cd "$(dirname "$0")/.."
 
-SERVICE="${SERVICE:-nitpick}"
-REGION="${REGION:-us-central1}"
-PROJECT="${GOOGLE_CLOUD_PROJECT:-}"
-DEPLOY=false
-
+ENV_NAME=prod
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --project) PROJECT="$2"; shift 2 ;;
-    --region) REGION="$2"; shift 2 ;;
-    --deploy) DEPLOY=true; shift ;;
+    --env) ENV_NAME="$2"; shift 2 ;;
     *) echo "Unknown argument: $1" >&2; exit 2 ;;
   esac
 done
 
-ok()   { printf '  \033[32m✓\033[0m %s\n' "$1"; }
-fix()  { printf '  \033[33m+\033[0m %s\n' "$1"; }
-warn() { printf '  \033[31m!\033[0m %s\n' "$1"; }
+ENV_FILE=src/environments/environment.ts
+[[ "$ENV_NAME" == dev ]] && ENV_FILE=src/environments/environment.development.ts
 
-echo "Checking gcloud"
-command -v gcloud > /dev/null || { warn "gcloud is not installed — https://cloud.google.com/sdk/docs/install"; exit 1; }
-ok "gcloud $(gcloud version --format='value(core)' 2>/dev/null)"
-
-ACCOUNT=$(gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null)
-[[ -n "$ACCOUNT" ]] || { warn "not authenticated — run: gcloud auth login"; exit 1; }
-ok "authenticated as $ACCOUNT"
-
-echo "Checking project"
-if [[ -z "$PROJECT" ]]; then
-  PROJECT=$(gcloud config get-value project 2>/dev/null)
-fi
-[[ -n "$PROJECT" && "$PROJECT" != "(unset)" ]] || {
-  warn "no project — pass --project or run: gcloud config set project PROJECT_ID"
-  exit 1
+read_env() {
+  node --input-type=module -e "
+    const { environment } = await import('./$ENV_FILE');
+    console.log(environment['$1'] ?? '');
+  "
 }
-gcloud projects describe "$PROJECT" --format='value(projectId)' > /dev/null
-ok "project $PROJECT"
 
-echo "Checking APIs"
-ENABLED=$(gcloud services list --enabled --project "$PROJECT" --format='value(config.name)')
+PROBLEMS=0
+ok()   { printf '  \033[32m✓\033[0m %s\n' "$1"; }
+bad()  { printf '  \033[31m✗\033[0m %s\n' "$1"; PROBLEMS=$((PROBLEMS + 1)); }
+
+SERVICE=$(read_env service)
+PROJECT=$(read_env project)
+REGION=$(read_env region)
+CLIENT_ID=$(read_env googleClientId)
+
+echo "Resource set: $ENV_NAME (service=$SERVICE region=$REGION)"
+
+echo "gcloud"
+if ! command -v gcloud > /dev/null; then
+  bad "gcloud is not installed — https://cloud.google.com/sdk/docs/install"
+  exit 1
+fi
+ACCOUNT=$(gcloud auth list --filter=status:ACTIVE --format='value(account)' 2>/dev/null)
+if [[ -n "$ACCOUNT" ]]; then ok "authenticated as $ACCOUNT"; else bad "not authenticated — run: gcloud auth login"; exit 1; fi
+
+echo "Project"
+if [[ -z "$PROJECT" ]]; then
+  bad "no project in $ENV_FILE — run scripts/init.sh"
+  exit 1
+fi
+if gcloud projects describe "$PROJECT" --format='value(projectId)' > /dev/null 2>&1; then
+  ok "project $PROJECT"
+else
+  bad "project $PROJECT does not exist or is not accessible — run scripts/init.sh"
+  exit 1
+fi
+if [[ "$(gcloud billing projects describe "$PROJECT" --format='value(billingEnabled)' 2>/dev/null)" == "True" ]]; then
+  ok "billing enabled"
+else
+  bad "billing is not enabled — run scripts/init.sh"
+fi
+
+echo "APIs"
+ENABLED=$(gcloud services list --enabled --project "$PROJECT" --format='value(config.name)' 2>/dev/null)
 for api in aiplatform.googleapis.com run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com; do
-  if grep -q "^${api}$" <<< "$ENABLED"; then
-    ok "$api"
-  else
-    fix "enabling $api"
-    gcloud services enable "$api" --project "$PROJECT"
-  fi
+  if grep -q "^${api}$" <<< "$ENABLED"; then ok "$api"; else bad "$api not enabled — run scripts/init.sh"; fi
 done
 
-echo "Checking Cloud Run service"
-SA=""
-if gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" --format='value(metadata.name)' > /dev/null 2>&1; then
+echo "Cloud Run"
+describe() {
+  gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" --format="value($1)" 2>/dev/null
+}
+if [[ -n "$(describe metadata.name)" ]]; then
   ok "service $SERVICE exists in $REGION"
-  SA=$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" \
-    --format='value(spec.template.spec.serviceAccountName)')
-  CLIENT_ID=$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" \
-    --format='value(spec.template.spec.containers[0].env)' | tr ';' '\n' | grep -o "GOOGLE_CLIENT_ID.*" || true)
-  if [[ -n "$CLIENT_ID" ]]; then
-    ok "GOOGLE_CLIENT_ID is set"
-  else
-    warn "GOOGLE_CLIENT_ID is not set — create an OAuth web client (see README) then run:"
-    warn "  gcloud run services update $SERVICE --region $REGION --set-env-vars GOOGLE_CLIENT_ID=..."
-  fi
-else
-  if $DEPLOY; then
-    fix "deploying $SERVICE from source (first build takes a few minutes)"
-  else
-    warn "service $SERVICE not deployed — re-run with --deploy, or:"
-    warn "  gcloud run deploy $SERVICE --source . --region $REGION --allow-unauthenticated"
-  fi
-fi
 
-if $DEPLOY; then
-  gcloud run deploy "$SERVICE" \
-    --source "$(dirname "$0")/.." \
-    --project "$PROJECT" \
-    --region "$REGION" \
-    --allow-unauthenticated \
-    --set-env-vars "GOOGLE_CLOUD_PROJECT=$PROJECT"
-  SA=$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" \
-    --format='value(spec.template.spec.serviceAccountName)')
-fi
-
-if [[ -n "$SA" ]]; then
-  echo "Checking IAM"
+  SA=$(describe spec.template.spec.serviceAccountName)
   if gcloud projects get-iam-policy "$PROJECT" \
       --flatten='bindings[].members' \
       --filter="bindings.role:roles/aiplatform.user AND bindings.members:serviceAccount:$SA" \
-      --format='value(bindings.role)' | grep -q .; then
+      --format='value(bindings.role)' 2>/dev/null | grep -q .; then
     ok "$SA has roles/aiplatform.user"
   else
-    fix "granting roles/aiplatform.user to $SA"
-    gcloud projects add-iam-policy-binding "$PROJECT" \
-      --member "serviceAccount:$SA" \
-      --role roles/aiplatform.user \
-      --condition None > /dev/null
+    bad "$SA is missing roles/aiplatform.user — run scripts/init.sh"
   fi
+
+  if [[ -n "$CLIENT_ID" ]] || describe 'spec.template.spec.containers[0].env' | grep -q GOOGLE_CLIENT_ID; then
+    ok "sign-in client ID configured"
+  else
+    bad "no OAuth client ID in $ENV_FILE or on the service — see the steps init.sh prints"
+  fi
+
+  ok "service URL: $(describe status.url)"
+else
+  bad "service $SERVICE not found in $REGION — run scripts/init.sh"
 fi
 
-echo "Done"
-if gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" --format='value(status.url)' 2>/dev/null; then
-  echo "Remember: the service URL must be an authorized JavaScript origin on the OAuth client."
+echo
+if [[ $PROBLEMS -eq 0 ]]; then
+  echo "All checks passed."
+else
+  echo "$PROBLEMS problem(s) found."
+  exit 1
 fi
