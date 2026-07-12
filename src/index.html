@@ -8,15 +8,10 @@
     <meta name="description" content="An editor that checks prose with Gemini." />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <!-- Self-hosted via scripts/vendor-fonts.mjs so text and icons never
-         depend on fonts.googleapis.com at runtime. -->
-    <link
-      rel="preload"
-      href="fonts/material-symbols-outlined-00.woff2"
-      as="font"
-      type="font/woff2"
-      crossorigin
-    />
-    <link rel="stylesheet" href="fonts/fonts.css" />
+         depend on fonts.googleapis.com at runtime. The woff2 files are
+         content-hashed; fonts.css is served no-cache so regenerated subsets
+         reach browsers immediately (?v busts caches poisoned before that). -->
+    <link rel="stylesheet" href="fonts/fonts.css?v=2" />
   </head>
   <body>
     <app-root></app-root>
