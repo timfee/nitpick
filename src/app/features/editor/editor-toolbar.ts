@@ -87,6 +87,12 @@ const TOOLS: ToolbarItem[] = [
     exec: (c) => c.toggleOrderedList(),
     active: ['orderedList'],
   },
+  {
+    icon: 'checklist',
+    tip: 'Task list',
+    exec: (c) => c.toggleTaskList(),
+    active: ['taskList'],
+  },
   { icon: 'format_quote', tip: 'Quote', exec: (c) => c.toggleBlockquote(), active: ['blockquote'] },
   {
     icon: 'code_blocks',

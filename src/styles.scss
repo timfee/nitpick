@@ -116,6 +116,53 @@ body {
     margin-block: 1.5rem;
   }
 
+  // Checked items stay plain prose (no strikethrough) — this is a to-do
+  // list, not a record of what to disregard.
+  ul[data-type='taskList'] {
+    list-style: none;
+    padding-inline-start: 0;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+
+      + li {
+        margin-block-start: 0.25rem;
+      }
+
+      > label {
+        // The prose line-height otherwise squashes the checkbox against the
+        // text baseline; give it its own box to align against the first
+        // line instead.
+        display: flex;
+        align-items: center;
+        block-size: 1.7em;
+        flex: 0 0 auto;
+        user-select: none;
+      }
+
+      > div {
+        flex: 1 1 auto;
+
+        > p {
+          margin: 0;
+        }
+      }
+
+      input[type='checkbox'] {
+        inline-size: 1rem;
+        block-size: 1rem;
+        accent-color: var(--mat-sys-primary);
+        cursor: pointer;
+      }
+    }
+
+    ul[data-type='taskList'] {
+      margin-block-start: 0.25rem;
+    }
+  }
+
   a {
     color: var(--mat-sys-primary);
     text-decoration: underline;
