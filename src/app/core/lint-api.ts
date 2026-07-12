@@ -1,11 +1,11 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject } from '@angular/core';
+import { Service, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import type { LintReport } from '../../shared/lint';
 import { Auth } from './auth';
 
-@Injectable({ providedIn: 'root' })
+@Service()
 export class LintApi {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(Auth);

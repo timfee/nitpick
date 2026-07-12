@@ -1,16 +1,17 @@
 import { Component, ElementRef, afterNextRender, inject, signal, viewChild } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
-import { Router } from '@angular/router';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
+import { environment } from '../../../environments/environment';
 import { Auth } from '../../core/auth';
 import { LintApi } from '../../core/lint-api';
 
 @Component({
   selector: 'nit-sign-in-page',
-  imports: [MatCardModule, MatIconModule],
+  imports: [MatCardModule, MatIconModule, MatProgressSpinnerModule],
   template: `
-    <main class="wrap">
+    <main>
       <mat-card appearance="outlined">
         <mat-card-header>
           <mat-icon mat-card-avatar>spellcheck</mat-icon>
@@ -22,13 +23,18 @@ import { LintApi } from '../../core/lint-api';
           @if (error()) {
             <p class="error">{{ error() }}</p>
           }
-          <div class="gsi" #gsi></div>
+          <div class="slot">
+            <div #gsi></div>
+            @if (!ready() && !error()) {
+              <mat-spinner diameter="24" />
+            }
+          </div>
         </mat-card-content>
       </mat-card>
     </main>
   `,
   styles: `
-    .wrap {
+    main {
       min-height: 100dvh;
       display: grid;
       place-items: center;
@@ -38,9 +44,12 @@ import { LintApi } from '../../core/lint-api';
       width: min(26rem, 90vw);
       padding: 0.5rem;
     }
-    .gsi {
+    .slot {
       margin-top: 1.5rem;
       min-height: 44px;
+      display: grid;
+      align-items: center;
+      justify-items: start;
     }
     .error {
       color: var(--mat-sys-error);
@@ -50,26 +59,25 @@ import { LintApi } from '../../core/lint-api';
 export class SignInPage {
   private readonly auth = inject(Auth);
   private readonly api = inject(LintApi);
-  private readonly router = inject(Router);
   private readonly gsiHost = viewChild.required<ElementRef<HTMLElement>>('gsi');
 
   protected readonly error = signal('');
+  protected readonly ready = signal(false);
 
   constructor() {
     afterNextRender(() => void this.init());
   }
 
   private async init(): Promise<void> {
-    if (this.auth.user()) {
-      void this.router.navigateByUrl('/');
-      return;
-    }
     try {
-      const { clientId } = await this.api.clientId();
-      if (!clientId) throw new Error();
+      // The build bakes the client ID in; the API call is only a fallback
+      // for deployments configured purely through environment variables.
+      const clientId = environment.googleClientId || (await this.api.clientId()).clientId;
+      if (!clientId) throw new Error('missing client id');
       await this.auth.renderButton(this.gsiHost().nativeElement, clientId);
+      this.ready.set(true);
     } catch {
-      this.error.set('Sign-in is unavailable — is GOOGLE_CLIENT_ID configured on the server?');
+      this.error.set('Sign-in is unavailable — no OAuth client ID is configured.');
     }
   }
 }

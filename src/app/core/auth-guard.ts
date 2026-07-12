@@ -1,14 +1,15 @@
-import { isPlatformServer } from '@angular/common';
-import { PLATFORM_ID, inject } from '@angular/core';
+import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 
 import { Auth } from './auth';
 
 /**
- * SSR renders the shell unconditionally (there is no session on the server);
- * the guard re-runs in the browser during hydration and redirects if needed.
+ * The session cookie is visible on both server and browser, so these run
+ * identically on both: SSR responds with the right page (or an HTTP
+ * redirect) on the first byte — no client-side redirect flash.
  */
-export const authGuard: CanActivateFn = () => {
-  if (isPlatformServer(inject(PLATFORM_ID))) return true;
-  return inject(Auth).user() ? true : inject(Router).parseUrl('/signin');
-};
+export const signedInGuard: CanActivateFn = () =>
+  inject(Auth).user() ? true : inject(Router).parseUrl('/signin');
+
+export const signedOutGuard: CanActivateFn = () =>
+  inject(Auth).user() ? inject(Router).parseUrl('/') : true;
