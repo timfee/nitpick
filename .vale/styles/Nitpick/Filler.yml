@@ -1,0 +1,18 @@
+# House style: no marketing filler.
+extends: existence
+message: "'%s' is marketing filler — cut it or say something concrete."
+level: warning
+ignorecase: true
+tokens:
+  - simply
+  - seamless(?:ly)?
+  - blazingly?[ -]fast
+  - world-class
+  - cutting-edge
+  - best-in-class
+  - state-of-the-art
+  - effortless(?:ly)?
+  - game-chang(?:ing|er)
+  - revolutionary
+  - next-level
+  - supercharged?

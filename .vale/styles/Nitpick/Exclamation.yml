@@ -1,0 +1,7 @@
+# Calm microcopy: no exclamation points.
+extends: existence
+message: "Avoid exclamation points ('%s')."
+level: warning
+nonword: true
+tokens:
+  - '\w+!(?:\s|$)'

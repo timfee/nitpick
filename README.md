@@ -67,4 +67,16 @@ npm start
 ```
 
 `ng serve` runs the same Express server, so the API works in development
-without a proxy. Verify changes with `npm run lint` and `npm run build`.
+without a proxy. Verify changes with `npm run lint`, `npm run lint:prose`,
+and `npm run build`.
+
+## Prose linting
+
+`npm run lint:prose` runs [Vale](https://vale.sh) over the prose in this
+repo: Markdown docs, code comments, and template microcopy — visible text
+plus labels and tooltips, extracted with the Angular compiler so `@if`/`@for`
+control flow doesn't confuse it. The house rules (sentence-case headings, no
+marketing filler, no emojis, no exclamation points) live in
+`.vale/styles/Nitpick/`; project words go in
+`.vale/styles/config/vocabularies/Nitpick/accept.txt`. CI runs the same
+check through `.github/workflows/prose.yml`.

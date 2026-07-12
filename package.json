@@ -8,7 +8,8 @@
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "serve:ssr:nitpick": "node dist/nitpick/server/server.mjs",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "lint:prose": "node scripts/lint-prose.mjs"
   },
   "private": true,
   "packageManager": "npm@11.16.0",
@@ -46,6 +47,7 @@
     "@eslint/js": "^10.0.1",
     "@types/express": "^5.0.1",
     "@types/node": "^20.17.19",
+    "@vvago/vale": "^3.15.1",
     "angular-eslint": "22.0.0",
     "eslint": "^10.3.0",
     "prettier": "^3.8.1",

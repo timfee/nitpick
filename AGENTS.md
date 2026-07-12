@@ -18,6 +18,7 @@
   a cookie, verified server-side. Gemini is called through `@google/genai` in Vertex
   mode with Application Default Credentials — no API keys, no key files, no secrets in
   the repo.
-- Verify with `npm run lint` (typed eslint, zero findings) and `npm run build`.
+- Verify with `npm run lint` (typed eslint, zero findings), `npm run lint:prose`
+  (Vale over docs, comments, and template microcopy), and `npm run build`.
   Google Cloud resources: `scripts/init.sh` creates, `scripts/doctor.sh` verifies.
 - Commits carry no AI attribution, co-authorship, or tool mentions.
