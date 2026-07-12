@@ -1,0 +1,81 @@
+<h2 mat-dialog-title>
+  <mat-icon>auto_fix_high</mat-icon>
+  Fix issues with AI
+</h2>
+
+<mat-dialog-content>
+  <div class="meta">
+    <span>{{ approved() }} of {{ total }} issues approved</span>
+    @if (model()) {
+      <span class="model">Using {{ model() }}</span>
+    }
+  </div>
+  <mat-progress-bar [value]="progress()" aria-label="Fix progress" />
+
+  @if (step(); as s) {
+    <p class="group-title">
+      @if (s.findings.length === 1) {
+        1 issue in this paragraph
+      } @else {
+        {{ s.findings.length }} issues in this paragraph — fixed together
+      }
+    </p>
+
+    <ul class="issues" role="list">
+      @for (f of s.findings; track f.id) {
+        <li [class]="'severity-' + f.severity">
+          <span class="sev">{{ f.severity }}</span>
+          <span class="msg">
+            {{ f.message }}
+            @if (f.rule) {
+              <span class="rule">{{ f.rule }}</span>
+            }
+          </span>
+        </li>
+      }
+    </ul>
+
+    <div class="panes">
+      <section>
+        <h3>Original</h3>
+        <div class="pane">
+          @for (seg of originalDiff(); track $index) {
+            <span [class.del]="seg.changed">{{ seg.text }}</span>
+          }
+        </div>
+      </section>
+      <section>
+        <h3>Suggested fix</h3>
+        <div class="pane" [class.busy]="loading()">
+          @if (loading()) {
+            <mat-spinner diameter="24" />
+          } @else if (error(); as e) {
+            <p class="error">{{ e }}</p>
+          } @else {
+            @for (seg of suggestedDiff(); track $index) {
+              <span [class.ins]="seg.changed">{{ seg.text }}</span>
+            }
+          }
+        </div>
+      </section>
+    </div>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions>
+  @if (!loading() && suggestion()) {
+    <span class="source">
+      {{ source() === 'ai' ? 'AI rewrite' : 'Built from rule suggestions' }}
+    </span>
+  }
+  <span class="spacer"></span>
+  <button matButton (click)="skip()">Skip</button>
+  <button matButton="outlined" [disabled]="loading()" (click)="retry()">
+    <mat-icon>refresh</mat-icon>
+    Retry
+  </button>
+  <button matButton="filled" [disabled]="loading() || !suggestion()" (click)="approve()">
+    <mat-icon>check</mat-icon>
+    Approve
+  </button>
+</mat-dialog-actions>

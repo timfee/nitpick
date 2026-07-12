@@ -1,6 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -9,13 +10,22 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapEditorDirective } from 'ngx-tiptap';
+import { firstValueFrom } from 'rxjs';
 
 import { Auth } from '../../core/auth';
 import { LintApi } from '../../core/lint-api';
+import { StyleSettings } from '../../core/style-settings';
 import { AccountMenu } from './account-menu';
 import { EditorToolbar } from './editor-toolbar';
+import {
+  FixDialog,
+  buildFixGroups,
+  type FixDialogData,
+  type FixDialogResult,
+} from './fix-dialog';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
+import { SettingsDialog, type SettingsDialogData } from './settings-dialog';
 import { buildTextIndex, locateFindings, type UiFinding } from './text-index';
 
 const SAMPLE = `
@@ -39,61 +49,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
     FindingsPanel,
   ],
   templateUrl: './editor-page.html',
-  styles: `
-    :host {
-      display: flex;
-      flex-direction: column;
-      height: 100dvh;
-    }
-    mat-toolbar {
-      gap: 0.25rem;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
-      .brand {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        margin-inline-end: 1rem;
-        font: var(--mat-sys-title-large);
-        font-weight: var(--mat-sys-title-medium-weight);
-      }
-      .spacer {
-        flex: 1;
-      }
-      .words {
-        font: var(--mat-sys-label-medium);
-        color: var(--mat-sys-on-surface-variant);
-        margin-inline-end: 0.75rem;
-        white-space: nowrap;
-        @media (max-width: 48rem) {
-          display: none;
-        }
-      }
-      .check {
-        white-space: nowrap;
-        flex-shrink: 0;
-      }
-    }
-    .body {
-      flex: 1;
-      display: grid;
-      grid-template-columns: 1fr minmax(18rem, 24rem);
-      min-height: 0;
-      @media (max-width: 60rem) {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr minmax(10rem, 40dvh);
-      }
-    }
-    main {
-      overflow-y: auto;
-      padding: 2rem 1.5rem;
-      display: grid;
-    }
-    nit-findings-panel {
-      border-inline-start: 1px solid var(--mat-sys-outline-variant);
-      background: var(--mat-sys-surface-container-low);
-      min-height: 0;
-    }
-  `,
+  styleUrl: './editor-page.scss',
   host: {
     '(document:keydown.control.enter)': 'check()',
     '(document:keydown.meta.enter)': 'check()',
@@ -103,6 +59,8 @@ export class EditorPage {
   private readonly api = inject(LintApi);
   private readonly auth = inject(Auth);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly dialog = inject(MatDialog);
+  private readonly styleSettings = inject(StyleSettings);
 
   protected readonly editor = signal<Editor | null>(null);
   protected readonly findings = signal<UiFinding[]>([]);
@@ -110,6 +68,8 @@ export class EditorPage {
   protected readonly checking = signal(false);
   protected readonly stale = signal(false);
   protected readonly words = signal(0);
+  /** Flat document text, feeding the readability scores in settings. */
+  private readonly plain = signal('');
 
   constructor() {
     afterNextRender(() => this.createEditor());
@@ -125,10 +85,13 @@ export class EditorPage {
       content: SAMPLE,
       autofocus: 'end',
       onUpdate: ({ editor }) => {
-        this.words.set(countWords(editor.getText()));
+        const text = editor.getText();
+        this.plain.set(text);
+        this.words.set(countWords(text));
         if (this.findings().length) this.stale.set(true);
       },
     });
+    this.plain.set(editor.getText());
     this.words.set(countWords(editor.getText()));
     this.editor.set(editor);
   }
@@ -142,7 +105,7 @@ export class EditorPage {
 
     this.checking.set(true);
     try {
-      const report = await this.api.check(index.text);
+      const report = await this.api.check(index.text, this.styleSettings.selections());
       const located = locateFindings(report.findings, buildTextIndex(editor.state.doc));
       this.findings.set(located.map((l) => l.finding));
       this.selectedId.set(null);
@@ -189,6 +152,43 @@ export class EditorPage {
     this.editor()?.commands.removeLintRange(finding.id);
     this.findings.update((list) => list.filter((f) => f.id !== finding.id));
     if (this.selectedId() === finding.id) this.selectedId.set(null);
+  }
+
+  protected openSettings(): void {
+    this.dialog.open<SettingsDialog, SettingsDialogData>(SettingsDialog, {
+      data: { text: this.plain },
+      width: 'min(40rem, calc(100vw - 2rem))',
+      maxWidth: 'none',
+      autoFocus: 'dialog',
+    });
+  }
+
+  protected async fixAll(): Promise<void> {
+    const editor = this.editor();
+    if (!editor) return;
+    const groups = buildFixGroups(editor.state, this.findings());
+    if (!groups.length) {
+      this.snackBar.open('The text changed — run the check again.', undefined, { duration: 4000 });
+      return;
+    }
+    const ref = this.dialog.open<FixDialog, FixDialogData, FixDialogResult>(FixDialog, {
+      data: { editor, groups, onResolved: (ids) => this.resolve(ids) },
+      width: 'min(46rem, calc(100vw - 2rem))',
+      maxWidth: 'none',
+      autoFocus: 'dialog',
+    });
+    const result = await firstValueFrom(ref.afterClosed());
+    if (result?.approved) {
+      const noun = result.approved === 1 ? 'issue' : 'issues';
+      this.snackBar.open(`Fixed ${result.approved} ${noun}.`, undefined, { duration: 4000 });
+    }
+  }
+
+  private resolve(ids: string[]): void {
+    const gone = new Set(ids);
+    this.findings.update((list) => list.filter((f) => !gone.has(f.id)));
+    const selected = this.selectedId();
+    if (selected && gone.has(selected)) this.selectedId.set(null);
   }
 
   private handleError(err: unknown): void {

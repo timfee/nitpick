@@ -26,6 +26,10 @@
     Check prose
   </button>
 
+  <button matIconButton matTooltip="Settings" aria-label="Settings" (click)="openSettings()">
+    <mat-icon>tune</mat-icon>
+  </button>
+
   <nit-account-menu />
 </mat-toolbar>
 
@@ -45,5 +49,6 @@
     (selectFinding)="select($event)"
     (applyFinding)="apply($event)"
     (dismissFinding)="dismiss($event)"
+    (fixAll)="fixAll()"
   />
 </div>

@@ -5,8 +5,9 @@
 - Angular 22: standalone components, signals, zoneless. Services use `@Service()`,
   guards are functional, dependencies come from `inject()`.
 - All styling goes through Angular Material's M3 system tokens (`--mat-sys-*`) and the
-  `mat.theme` / `mat.theme-overrides` APIs. One global stylesheet (`src/styles.scss`);
-  everything else is inline component styles. No Tailwind.
+  `mat.theme` / `mat.theme-overrides` APIs. One global stylesheet (`src/styles.scss`).
+  Non-trivial components use separate `.html`/`.scss` files next to the `.ts`; only
+  trivial components keep inline templates/styles. No Tailwind.
 - Typography is Google Sans Flex: weight 375 base, 450 for emphasis, 550 rarely.
   Sentence case everywhere — no all-caps text, no emojis, no marketing filler.
 - The lint contract is the Zod schema in `src/shared/lint.ts`; the server validates with

@@ -1,0 +1,49 @@
+<header>
+  <h2>Findings</h2>
+  @if (stale()) {
+    <mat-icon matTooltip="Text changed since the last check">history</mat-icon>
+  }
+  <span class="count">{{ findings().length }}</span>
+</header>
+
+@if (!findings().length) {
+  <p class="empty">No findings. Run a check to see suggestions here.</p>
+} @else {
+  <button matButton="tonal" class="fix-all" (click)="fixAll.emit()">
+    <mat-icon>auto_fix_high</mat-icon>
+    Fix all with AI
+  </button>
+}
+
+@for (f of findings(); track f.id) {
+  <mat-card
+    appearance="outlined"
+    [class]="'severity-' + f.severity"
+    [class.selected]="f.id === selectedId()"
+    (click)="selectFinding.emit(f.id)"
+  >
+    <mat-card-header>
+      <mat-card-title>{{ f.rule || f.category }}</mat-card-title>
+      <button
+        matIconButton
+        matTooltip="Dismiss"
+        aria-label="Dismiss finding"
+        (click)="dismissFinding.emit(f); $event.stopPropagation()"
+      >
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-card-header>
+    <mat-card-content>
+      <blockquote>{{ f.quote }}</blockquote>
+      <p>{{ f.message }}</p>
+      @if (f.suggestion) {
+        <code>{{ f.suggestion }}</code>
+      }
+    </mat-card-content>
+    @if (f.suggestion) {
+      <mat-card-actions align="end">
+        <button matButton (click)="applyFinding.emit(f); $event.stopPropagation()">Apply</button>
+      </mat-card-actions>
+    }
+  </mat-card>
+}

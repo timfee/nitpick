@@ -1,0 +1,87 @@
+<h2 mat-dialog-title>Settings</h2>
+
+<mat-dialog-content>
+  <section>
+    <h3>Readability</h3>
+    <p class="caption">Live scores for the current document.</p>
+
+    @if (report(); as r) {
+      <div class="ease">
+        <span class="ease-value">{{ r.ease.value }}</span>
+        <div class="ease-meta">
+          <span class="ease-name">Flesch reading ease</span>
+          <span class="ease-verdict">
+            {{ r.ease.verdict }} · {{ r.words }} words · {{ r.sentences }} sentences
+          </span>
+        </div>
+      </div>
+      <div class="grades">
+        @for (g of r.grades; track g.id) {
+          <div class="grade">
+            <span class="grade-name">{{ g.label }}</span>
+            <span class="grade-value">{{ g.value }}</span>
+          </div>
+        }
+      </div>
+    } @else {
+      <p class="empty">Write at least a few sentences to see scores.</p>
+    }
+  </section>
+
+  <section>
+    <h3>Style packages</h3>
+    <p class="caption">
+      From the Vale package library. Toggle a package, or expand it to manage individual rules.
+    </p>
+
+    @for (pkg of packages; track pkg.id) {
+      <div class="pkg">
+        <div class="pkg-row">
+          <mat-slide-toggle
+            [checked]="settings.packageEnabled(pkg.id)"
+            (change)="settings.setPackage(pkg.id, $event.checked)"
+            [aria-label]="'Check with ' + pkg.label"
+          />
+          <button
+            type="button"
+            class="pkg-expand"
+            [attr.aria-expanded]="expanded() === pkg.id"
+            (click)="toggleExpanded(pkg.id)"
+          >
+            <span class="pkg-text">
+              <span class="pkg-name">{{ pkg.label }}</span>
+              <span class="pkg-summary">{{ pkg.summary }}</span>
+            </span>
+            <span class="pkg-count">
+              {{ settings.enabledRuleCount(pkg.id) }} of {{ rulesFor(pkg.id).length }} rules
+            </span>
+            <mat-icon>{{ expanded() === pkg.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+          </button>
+        </div>
+
+        @if (expanded() === pkg.id) {
+          <ul class="rules" role="list">
+            @for (rule of rulesFor(pkg.id); track rule.id) {
+              <li>
+                <mat-checkbox
+                  [checked]="settings.ruleEnabled(pkg.id, rule.id)"
+                  [disabled]="!settings.packageEnabled(pkg.id)"
+                  (change)="settings.setRule(pkg.id, rule.id, $event.checked)"
+                >
+                  <span class="rule-name">{{ rule.id }}</span>
+                  @if (rule.hint) {
+                    <span class="rule-hint">{{ rule.hint }}</span>
+                  }
+                </mat-checkbox>
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    }
+  </section>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Done</button>
+</mat-dialog-actions>
