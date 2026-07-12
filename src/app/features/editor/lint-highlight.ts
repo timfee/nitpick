@@ -15,7 +15,17 @@ interface LintHighlightOptions {
   onSelect: (id: string | null) => void;
 }
 
+/** What we store in each decoration's spec (ProseMirror types it as any). */
+interface LintSpec {
+  id: string;
+  severity: LintSeverity;
+}
+
+type LintMeta = { set: LintRange[] } | { remove: string } | { select: string | null };
+
 const key = new PluginKey<DecorationSet>('lintHighlight');
+
+const specOf = (decoration: Decoration): LintSpec => decoration.spec as LintSpec;
 
 const toDecoration = ({ id, from, to, severity }: LintRange, selected: boolean) =>
   Decoration.inline(
@@ -25,20 +35,23 @@ const toDecoration = ({ id, from, to, severity }: LintRange, selected: boolean) 
       class: `lint lint--${severity}${selected ? ' lint--selected' : ''}`,
       'data-lint-id': id,
     },
-    { id, severity },
+    { id, severity } satisfies LintSpec,
   );
 
-const rangeOf = (d: Decoration): LintRange => ({
-  id: d.spec['id'],
-  severity: d.spec['severity'],
-  from: d.from,
-  to: d.to,
+const rangeOf = (decoration: Decoration): LintRange => ({
+  ...specOf(decoration),
+  from: decoration.from,
+  to: decoration.to,
 });
+
+const findById = (decorations: DecorationSet, id: string) =>
+  decorations.find(undefined, undefined, (spec) => (spec as LintSpec).id === id);
 
 /** Current (transaction-mapped) document range of a finding's highlight. */
 export const lintRangeById = (state: EditorState, id: string): LintRange | undefined => {
-  const hit = key.getState(state)?.find(undefined, undefined, (spec) => spec['id'] === id)[0];
-  return hit && rangeOf(hit);
+  const decorations = key.getState(state);
+  const hit = decorations && findById(decorations, id)[0];
+  return hit ? rangeOf(hit) : undefined;
 };
 
 declare module '@tiptap/core' {
@@ -65,7 +78,7 @@ export const LintHighlight = Extension.create<LintHighlightOptions>({
 
   addCommands() {
     const withMeta =
-      (meta: object) =>
+      (meta: LintMeta) =>
       ({ tr, dispatch }: { tr: Transaction; dispatch?: unknown }) => {
         if (dispatch) tr.setMeta(key, meta);
         return true;
@@ -86,22 +99,20 @@ export const LintHighlight = Extension.create<LintHighlightOptions>({
           init: () => DecorationSet.empty,
           apply(tr, decorations) {
             decorations = decorations.map(tr.mapping, tr.doc);
-            const meta = tr.getMeta(key);
+            const meta = tr.getMeta(key) as LintMeta | undefined;
             if (!meta) return decorations;
-            if (meta.set) {
+            if ('set' in meta) {
               return DecorationSet.create(
                 tr.doc,
-                meta.set.map((r: LintRange) => toDecoration(r, false)),
+                meta.set.map((range) => toDecoration(range, false)),
               );
             }
-            if (meta.remove) {
-              return decorations.remove(
-                decorations.find(undefined, undefined, (spec) => spec['id'] === meta.remove),
-              );
+            if ('remove' in meta) {
+              return decorations.remove(findById(decorations, meta.remove));
             }
             return DecorationSet.create(
               tr.doc,
-              decorations.find().map((d) => toDecoration(rangeOf(d), d.spec['id'] === meta.select)),
+              decorations.find().map((d) => toDecoration(rangeOf(d), specOf(d).id === meta.select)),
             );
           },
         },
@@ -111,7 +122,7 @@ export const LintHighlight = Extension.create<LintHighlightOptions>({
           },
           handleClick(view, pos) {
             const hit = key.getState(view.state)?.find(pos, pos)[0];
-            onSelect(hit?.spec['id'] ?? null);
+            onSelect(hit ? specOf(hit).id : null);
             return false;
           },
         },

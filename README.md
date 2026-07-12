@@ -31,20 +31,23 @@ src/
   server.ts      Angular SSR server + API mount
 ```
 
-## Prerequisites
+## Setup
 
-1. A Google Cloud project with the Vertex AI API enabled:
+Resource sets live in `src/environments/` — `environment.ts` (prod) and
+`environment.development.ts` (dev) share one project but use separate Cloud Run
+services. Two scripts manage the Google Cloud side:
 
-   ```bash
-   gcloud services enable aiplatform.googleapis.com
-   ```
-
-2. An OAuth 2.0 web client ID (APIs & Services → Credentials → Create credentials →
-   OAuth client ID → Web application). Add your origins
-   (`http://localhost:4200` for development, your Cloud Run URL after the first deploy)
-   to the authorized JavaScript origins.
+- `scripts/init.sh [--env dev|prod]` — one-time setup. Creates the project when the
+  environment file has none (and writes the new ID back), links billing, enables APIs,
+  grants the build service account role, deploys the service from source, and grants
+  `roles/aiplatform.user`. Prints instructions for the one manual step: creating the
+  OAuth web client ID (Google offers no API for that).
+- `scripts/doctor.sh [--env dev|prod]` — read-only verification of everything above;
+  points at init when something is missing.
 
 ## Configuration
+
+Defaults come from the environment files; environment variables override them at runtime.
 
 | Variable               | Required | Default            | Purpose                                                                                 |
 | ---------------------- | -------- | ------------------ | --------------------------------------------------------------------------------------- |
@@ -70,19 +73,11 @@ GOOGLE_CLIENT_ID=...apps.googleusercontent.com npm start
 Everything runs on Application Default Credentials — no key files.
 
 ```bash
-gcloud run deploy nitpick \
-  --source . \
-  --region us-central1 \
-  --allow-unauthenticated \
-  --set-env-vars GOOGLE_CLIENT_ID=...apps.googleusercontent.com,GOOGLE_CLOUD_PROJECT=$(gcloud config get-value project)
+scripts/init.sh              # first time (creates everything, deploys prod)
+scripts/init.sh --env dev    # same, for the dev service
+scripts/doctor.sh            # verify an existing setup
 ```
 
-The service account needs `roles/aiplatform.user`:
-
-```bash
-gcloud projects add-iam-policy-binding $(gcloud config get-value project) \
-  --member serviceAccount:$(gcloud run services describe nitpick --region us-central1 --format 'value(spec.template.spec.serviceAccountName)') \
-  --role roles/aiplatform.user
-```
-
-After the first deploy, add the service URL to the OAuth client's authorized JavaScript origins.
+After the first deploy, add the service URL to the OAuth client's authorized
+JavaScript origins and put the client ID in `src/environments/environment*.ts`
+(or set `GOOGLE_CLIENT_ID` on the service).
