@@ -115,6 +115,11 @@ body {
     border-block-start: 1px solid var(--mat-sys-outline-variant);
     margin-block: 1.5rem;
   }
+
+  a {
+    color: var(--mat-sys-primary);
+    text-decoration: underline;
+  }
 }
 
 /* Severity to color, shared by inline decorations and finding cards. */

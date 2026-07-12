@@ -1,8 +1,11 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, inject, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor, type ChainedCommands } from '@tiptap/core';
+
+import { LinkDialog, type LinkDialogData } from './link-dialog';
 
 interface Tool {
   icon: string;
@@ -19,9 +22,19 @@ interface Divider {
   divider: true;
 }
 
-type ToolbarItem = Tool | Divider;
+/**
+ * Marker for the link button: setting a link needs a URL from the user, so it
+ * can't fit the synchronous `exec` pattern every other tool uses. Handled as
+ * a one-off case in the template instead of contorting `Tool`.
+ */
+interface LinkAction {
+  link: true;
+}
+
+type ToolbarItem = Tool | Divider | LinkAction;
 
 const isDivider = (item: ToolbarItem): item is Divider => 'divider' in item;
+const isLinkAction = (item: ToolbarItem): item is LinkAction => 'link' in item;
 
 const TOOLS: ToolbarItem[] = [
   { icon: 'undo', tip: 'Undo', exec: (c) => c.undo(), can: (e) => e.can().undo() },
@@ -41,6 +54,7 @@ const TOOLS: ToolbarItem[] = [
     exec: (c) => c.toggleCode(),
     active: ['code'],
   },
+  { link: true },
   { divider: true },
   {
     icon: 'format_h1',
@@ -91,6 +105,17 @@ const TOOLS: ToolbarItem[] = [
     @for (item of tools; track $index) {
       @if (isDivider(item)) {
         <span class="divider"></span>
+      } @else if (isLinkAction(item)) {
+        <button
+          matIconButton
+          matTooltip="Link"
+          aria-label="Link"
+          [class.active]="isLinkActive()"
+          [disabled]="isLinkDisabled()"
+          (click)="toggleLink()"
+        >
+          <mat-icon>link</mat-icon>
+        </button>
       } @else {
         <button
           matIconButton
@@ -125,6 +150,8 @@ const TOOLS: ToolbarItem[] = [
 export class EditorToolbar {
   readonly editor = input.required<Editor>();
 
+  private readonly dialog = inject(MatDialog);
+
   protected readonly tools = TOOLS;
   /** Bumped on every transaction so tool state stays reactive without zones. */
   private readonly tick = signal(0);
@@ -139,6 +166,7 @@ export class EditorToolbar {
   }
 
   protected readonly isDivider = isDivider;
+  protected readonly isLinkAction = isLinkAction;
 
   protected run(tool: Tool): void {
     tool.exec(this.editor().chain().focus()).run();
@@ -152,5 +180,37 @@ export class EditorToolbar {
   protected isDisabled(tool: Tool): boolean {
     this.tick();
     return tool.can ? !tool.can(this.editor()) : false;
+  }
+
+  protected isLinkActive(): boolean {
+    this.tick();
+    return this.editor().isActive('link');
+  }
+
+  /** Nothing sensible to link when there's no selection and no link at the caret. */
+  protected isLinkDisabled(): boolean {
+    this.tick();
+    const editor = this.editor();
+    return editor.state.selection.empty && !editor.isActive('link');
+  }
+
+  protected toggleLink(): void {
+    const editor = this.editor();
+    if (editor.isActive('link')) {
+      editor.chain().focus().extendMarkRange('link').unsetLink().run();
+      return;
+    }
+
+    const href = (editor.getAttributes('link')['href'] as string | undefined) ?? '';
+    this.dialog
+      .open<LinkDialog, LinkDialogData, string>(LinkDialog, {
+        data: { href },
+        width: 'min(26rem, calc(100vw - 2rem))',
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (!result) return;
+        editor.chain().focus().extendMarkRange('link').setLink({ href: result }).run();
+      });
   }
 }

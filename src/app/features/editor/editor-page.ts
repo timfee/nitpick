@@ -137,7 +137,10 @@ export class EditorPage {
   private createEditor(): void {
     const editor = new Editor({
       extensions: [
-        StarterKit,
+        StarterKit.configure({
+          // Clicking a link while editing should place the cursor, not navigate.
+          link: { openOnClick: false, defaultProtocol: 'https' },
+        }),
         LintHighlight.configure({ onSelect: (id) => this.selectedId.set(id) }),
       ],
       content: SAMPLE,
