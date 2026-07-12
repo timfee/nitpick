@@ -25,6 +25,10 @@
     Check prose
   </button>
 
+  @if (editor(); as ed) {
+    <nit-file-menu [editor]="ed" (imported)="onImported()" />
+  }
+
   <button matIconButton matTooltip="Settings" aria-label="Settings" (click)="openSettings()">
     <mat-icon>tune</mat-icon>
   </button>

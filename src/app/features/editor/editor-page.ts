@@ -19,6 +19,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from '@tiptap/core';
 import { TaskItem, TaskList } from '@tiptap/extension-list';
+import { Markdown } from '@tiptap/markdown';
 import type { EditorState } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapEditorDirective } from 'ngx-tiptap';
@@ -30,6 +31,7 @@ import { StyleSettings } from '../../core/style-settings';
 import { AccountMenu } from './account-menu';
 import { blockStart, buildFixGroups, type FixGroup } from './blocks';
 import { EditorToolbar } from './editor-toolbar';
+import { FileMenu } from './file-menu';
 import { FixDialog, type FixDialogData } from './fix-dialog';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
@@ -66,6 +68,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
     TiptapEditorDirective,
     AccountMenu,
     EditorToolbar,
+    FileMenu,
     FindingsPanel,
     LintPopover,
     StatusBar,
@@ -144,6 +147,7 @@ export class EditorPage {
         }),
         TaskList,
         TaskItem.configure({ nested: true }),
+        Markdown,
         LintHighlight.configure({ onSelect: (id) => this.selectedId.set(id) }),
       ],
       content: SAMPLE,
@@ -221,6 +225,16 @@ export class EditorPage {
     this.editor()?.commands.removeLintRange(finding.id);
     this.findings.update((list) => list.filter((f) => f.id !== finding.id));
     if (this.selectedId() === finding.id) this.selectedId.set(null);
+  }
+
+  /** After a markdown import, prior findings no longer point at real text. */
+  protected onImported(): void {
+    const editor = this.editor();
+    if (!editor) return;
+    this.findings.set([]);
+    this.selectedId.set(null);
+    this.stale.set(false);
+    editor.commands.setLintRanges([]);
   }
 
   protected openSettings(): void {

@@ -1,0 +1,20 @@
+<button matIconButton matTooltip="File" aria-label="File" [matMenuTriggerFor]="menu">
+  <mat-icon>draft</mat-icon>
+</button>
+<mat-menu #menu>
+  <button mat-menu-item (click)="triggerImport()">
+    <mat-icon>upload_file</mat-icon>
+    Import markdown file
+  </button>
+  <button mat-menu-item (click)="download()">
+    <mat-icon>download</mat-icon>
+    Download as markdown
+  </button>
+</mat-menu>
+<input
+  #fileInput
+  type="file"
+  accept=".md,.markdown,text/markdown"
+  hidden
+  (change)="onFileSelected($event)"
+/>
