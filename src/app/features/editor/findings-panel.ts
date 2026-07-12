@@ -11,15 +11,15 @@ import type { UiFinding } from './text-index';
   imports: [MatButtonModule, MatCardModule, MatIconModule, MatTooltipModule],
   template: `
     <header>
-      <h2 class="mat-title-medium">Findings</h2>
+      <h2>Findings</h2>
       @if (stale()) {
         <mat-icon matTooltip="Text changed since the last check">history</mat-icon>
       }
-      <span class="count mat-label-large">{{ findings().length }}</span>
+      <span class="count">{{ findings().length }}</span>
     </header>
 
     @if (!findings().length) {
-      <p class="empty mat-body-medium">No findings. Run a check to see suggestions here.</p>
+      <p class="empty">No findings. Run a check to see suggestions here.</p>
     }
 
     @for (f of findings(); track f.id) {
@@ -30,7 +30,7 @@ import type { UiFinding } from './text-index';
         (click)="selectFinding.emit(f.id)"
       >
         <mat-card-header>
-          <mat-card-title class="mat-label-medium">{{ f.category }}</mat-card-title>
+          <mat-card-title>{{ f.category }}</mat-card-title>
           <button
             matIconButton
             matTooltip="Dismiss"
@@ -41,10 +41,10 @@ import type { UiFinding } from './text-index';
           </button>
         </mat-card-header>
         <mat-card-content>
-          <blockquote class="mat-body-medium">{{ f.quote }}</blockquote>
-          <p class="mat-body-medium">{{ f.message }}</p>
+          <blockquote>{{ f.quote }}</blockquote>
+          <p>{{ f.message }}</p>
           @if (f.suggestion) {
-            <code class="mat-body-medium">{{ f.suggestion }}</code>
+            <code>{{ f.suggestion }}</code>
           }
         </mat-card-content>
         @if (f.suggestion) {
@@ -72,8 +72,10 @@ import type { UiFinding } from './text-index';
       h2 {
         flex: 1;
         margin: 0;
+        font: var(--mat-sys-title-medium);
       }
       .count {
+        font: var(--mat-sys-label-large);
         background: var(--mat-sys-secondary-container);
         color: var(--mat-sys-on-secondary-container);
         border-radius: 1rem;
@@ -87,14 +89,8 @@ import type { UiFinding } from './text-index';
     }
     mat-card {
       cursor: pointer;
-      --severity: var(--mat-sys-primary);
-      border-inline-start: 3px solid var(--severity);
-      &.severity-warning {
-        --severity: var(--mat-sys-tertiary);
-      }
-      &.severity-error {
-        --severity: var(--mat-sys-error);
-      }
+      /* --severity-color comes from the shared .severity-* classes. */
+      border-inline-start: 3px solid var(--severity-color);
       &.selected {
         background: var(--mat-sys-surface-container-high);
       }
@@ -103,7 +99,13 @@ import type { UiFinding } from './text-index';
         align-items: center;
       }
       mat-card-title {
+        font: var(--mat-sys-label-medium);
         color: var(--mat-sys-on-surface-variant);
+      }
+      blockquote,
+      p,
+      code {
+        font: var(--mat-sys-body-medium);
       }
       blockquote {
         margin: 0.5rem 0;
@@ -114,9 +116,11 @@ import type { UiFinding } from './text-index';
         overflow-wrap: anywhere;
       }
       p {
+        font: var(--mat-sys-body-medium);
         margin: 0;
       }
       code {
+        font: var(--mat-sys-body-medium);
         display: block;
         margin-top: 0.5rem;
         background: var(--mat-sys-surface-container-high);

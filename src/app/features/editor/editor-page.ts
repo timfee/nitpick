@@ -2,62 +2,21 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, DestroyRef, afterNextRender, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Editor, type ChainedCommands } from '@tiptap/core';
+import { Editor } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapEditorDirective } from 'ngx-tiptap';
 
 import { Auth } from '../../core/auth';
 import { LintApi } from '../../core/lint-api';
+import { AccountMenu } from './account-menu';
+import { EditorToolbar } from './editor-toolbar';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
 import { buildTextIndex, locateFindings, type UiFinding } from './text-index';
-
-interface Tool {
-  icon: string;
-  tip: string;
-  exec: (chain: ChainedCommands) => ChainedCommands;
-  /** Mark/node name (with optional attrs) that renders this tool as active. */
-  active?: [name: string, attrs?: Record<string, unknown>];
-  /** When set, the tool is disabled unless this returns true. */
-  can?: (editor: Editor) => boolean;
-}
-
-const TOOLS: Tool[] = [
-  { icon: 'undo', tip: 'Undo', exec: (c) => c.undo(), can: (e) => e.can().undo() },
-  { icon: 'redo', tip: 'Redo', exec: (c) => c.redo(), can: (e) => e.can().redo() },
-  { icon: 'format_bold', tip: 'Bold', exec: (c) => c.toggleBold(), active: ['bold'] },
-  { icon: 'format_italic', tip: 'Italic', exec: (c) => c.toggleItalic(), active: ['italic'] },
-  {
-    icon: 'strikethrough_s',
-    tip: 'Strikethrough',
-    exec: (c) => c.toggleStrike(),
-    active: ['strike'],
-  },
-  {
-    icon: 'format_h2',
-    tip: 'Heading',
-    exec: (c) => c.toggleHeading({ level: 2 }),
-    active: ['heading', { level: 2 }],
-  },
-  {
-    icon: 'format_list_bulleted',
-    tip: 'Bullet list',
-    exec: (c) => c.toggleBulletList(),
-    active: ['bulletList'],
-  },
-  {
-    icon: 'format_list_numbered',
-    tip: 'Numbered list',
-    exec: (c) => c.toggleOrderedList(),
-    active: ['orderedList'],
-  },
-  { icon: 'format_quote', tip: 'Quote', exec: (c) => c.toggleBlockquote(), active: ['blockquote'] },
-];
 
 const SAMPLE = `
 <h1>Nitpicker</h1>
@@ -71,11 +30,12 @@ clichés like the plague. At this point in time, most drafts could of been tight
   imports: [
     MatButtonModule,
     MatIconModule,
-    MatMenuModule,
     MatProgressSpinnerModule,
     MatToolbarModule,
     MatTooltipModule,
     TiptapEditorDirective,
+    AccountMenu,
+    EditorToolbar,
     FindingsPanel,
   ],
   templateUrl: './editor-page.html',
@@ -93,39 +53,17 @@ clichés like the plague. At this point in time, most drafts could of been tight
         align-items: center;
         gap: 0.375rem;
         margin-inline-end: 1rem;
-        font-weight: 450;
-      }
-      .active {
-        background: var(--mat-sys-secondary-container);
-        color: var(--mat-sys-on-secondary-container);
+        font: var(--mat-sys-title-large);
+        font-weight: var(--mat-sys-title-medium-weight);
       }
       .spacer {
         flex: 1;
       }
       .words {
+        font: var(--mat-sys-label-medium);
         color: var(--mat-sys-on-surface-variant);
         margin-inline-end: 0.75rem;
         white-space: nowrap;
-      }
-      .account {
-        position: relative;
-      }
-      .avatar {
-        position: absolute;
-        inset: 0;
-        margin: auto;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-      }
-    }
-    .menu-user {
-      display: flex;
-      flex-direction: column;
-      padding: 0.5rem 1rem;
-      border-bottom: 1px solid var(--mat-sys-outline-variant);
-      small {
-        color: var(--mat-sys-on-surface-variant);
       }
     }
     .body {
@@ -159,15 +97,12 @@ export class EditorPage {
   private readonly auth = inject(Auth);
   private readonly snackBar = inject(MatSnackBar);
 
-  protected readonly user = this.auth.user;
   protected readonly editor = signal<Editor | null>(null);
   protected readonly findings = signal<UiFinding[]>([]);
   protected readonly selectedId = signal<string | null>(null);
   protected readonly checking = signal(false);
   protected readonly stale = signal(false);
   protected readonly words = signal(0);
-  /** Bumped on every transaction so toolbar state stays reactive without zones. */
-  protected readonly tick = signal(0);
 
   constructor() {
     afterNextRender(() => this.createEditor());
@@ -186,29 +121,9 @@ export class EditorPage {
         this.words.set(countWords(editor.getText()));
         if (this.findings().length) this.stale.set(true);
       },
-      onTransaction: () => this.tick.update((t) => t + 1),
     });
     this.words.set(countWords(editor.getText()));
     this.editor.set(editor);
-  }
-
-  protected readonly tools = TOOLS;
-
-  protected run(tool: Tool): void {
-    const editor = this.editor();
-    if (editor) tool.exec(editor.chain().focus()).run();
-  }
-
-  protected isOn(tool: Tool): boolean {
-    this.tick();
-    const editor = this.editor();
-    return !!editor && !!tool.active && editor.isActive(tool.active[0], tool.active[1]);
-  }
-
-  protected isDisabled(tool: Tool): boolean {
-    this.tick();
-    const editor = this.editor();
-    return !editor || (tool.can ? !tool.can(editor) : false);
   }
 
   protected async check(): Promise<void> {
@@ -267,10 +182,6 @@ export class EditorPage {
     this.editor()?.commands.removeLintRange(finding.id);
     this.findings.update((list) => list.filter((f) => f.id !== finding.id));
     if (this.selectedId() === finding.id) this.selectedId.set(null);
-  }
-
-  protected signOut(): void {
-    this.auth.signOut();
   }
 
   private handleError(err: unknown): void {
