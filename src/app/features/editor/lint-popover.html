@@ -4,12 +4,12 @@
 }
 <div class="actions">
   @if (finding().suggestion) {
-    <button type="button" class="primary" (click)="swap.emit()">Swap</button>
+    <button matButton="tonal" (click)="swap.emit()">Swap</button>
   }
   @if (siblings() > 1 || !finding().suggestion) {
-    <button type="button" (click)="fixLine.emit()">
+    <button matButton (click)="fixLine.emit()">
       Fix line{{ siblings() > 1 ? ' · ' + siblings() : '' }}
     </button>
   }
-  <button type="button" (click)="ignore.emit()">Ignore</button>
+  <button matButton (click)="ignore.emit()">Ignore</button>
 </div>

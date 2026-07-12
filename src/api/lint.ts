@@ -21,13 +21,12 @@ const responseJsonSchema = toResponseJsonSchema(LintReportSchema);
 
 /**
  * Expands the client's style selections into per-check prompt lines, dropping
- * unknown package/rule ids against the generated catalog. Falls back to the
- * default packages when nothing valid is selected.
+ * unknown package/rule ids against the generated catalog. An absent list
+ * falls back to the default packages; an explicitly empty list means the
+ * user turned everything off and lints nothing.
  */
 function styleInstructions(styles: StyleSelection[] | undefined): string {
-  const wanted: StyleSelection[] = styles?.length
-    ? styles
-    : DEFAULT_STYLE_IDS.map((id) => ({ id }));
+  const wanted: StyleSelection[] = styles ?? DEFAULT_STYLE_IDS.map((id) => ({ id }));
   const sections: string[] = [];
 
   for (const selection of wanted) {

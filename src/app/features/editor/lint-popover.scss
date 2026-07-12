@@ -26,25 +26,9 @@ code {
 .actions {
   display: flex;
   gap: 0.25rem;
-  button {
-    border: 0;
-    background: none;
-    padding: 0.25rem 0.625rem;
-    border-radius: 999px;
-    font: var(--mat-sys-label-medium);
-    font-weight: var(--mat-sys-title-medium-weight);
-    color: var(--mat-sys-primary);
-    cursor: pointer;
-    white-space: nowrap;
-    &:hover {
-      background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
-    }
-    &.primary {
-      background: var(--mat-sys-secondary-container);
-      color: var(--mat-sys-on-secondary-container);
-      &:hover {
-        background: color-mix(in srgb, var(--mat-sys-on-secondary-container) 10%, var(--mat-sys-secondary-container));
-      }
-    }
-  }
+  // Trim Material's 40px buttons to popover scale.
+  --mat-button-text-container-height: 2rem;
+  --mat-button-tonal-container-height: 2rem;
+  --mat-button-text-horizontal-padding: 0.625rem;
+  --mat-button-tonal-horizontal-padding: 0.75rem;
 }

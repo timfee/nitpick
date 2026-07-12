@@ -1,0 +1,12 @@
+<h3>{{ heading() }}</h3>
+<div class="pane" [class.busy]="loading()">
+  @if (loading()) {
+    <mat-spinner diameter="24" />
+  } @else if (error(); as e) {
+    <p class="error">{{ e }}</p>
+  } @else {
+    @for (seg of segments(); track $index) {
+      <span [class]="seg.changed ? change() : ''">{{ seg.text }}</span>
+    }
+  }
+</div>

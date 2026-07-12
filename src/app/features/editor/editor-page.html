@@ -63,20 +63,4 @@
   />
 </div>
 
-<footer class="statusbar">
-  <span class="stat"><b>{{ words() }}</b> words</span>
-  @if (readability(); as r) {
-    <span class="sep optional" aria-hidden="true"></span>
-    <span class="stat optional"><b>{{ r.sentences }}</b> sentences</span>
-    <span class="sep" aria-hidden="true"></span>
-    <span class="stat" [matTooltip]="'Flesch reading ease — ' + r.ease.verdict">
-      Ease <b>{{ r.ease.value }}</b>
-    </span>
-    @for (g of r.grades; track g.id) {
-      <span class="sep optional" aria-hidden="true"></span>
-      <span class="stat optional" [matTooltip]="g.label + ' — ' + g.hint">
-        {{ g.short }} <b>{{ g.value }}</b>
-      </span>
-    }
-  }
-</footer>
+<nit-status-bar [words]="words()" [readability]="readability()" />

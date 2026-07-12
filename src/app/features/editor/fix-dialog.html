@@ -34,28 +34,14 @@
     </div>
 
     <div class="panes">
-      <section>
-        <h3>This line</h3>
-        <div class="pane">
-          @for (seg of originalDiff(); track $index) {
-            <span [class.del]="seg.changed">{{ seg.text }}</span>
-          }
-        </div>
-      </section>
-      <section>
-        <h3>Suggested fix</h3>
-        <div class="pane" [class.busy]="loading()">
-          @if (loading()) {
-            <mat-spinner diameter="24" />
-          } @else if (error(); as e) {
-            <p class="error">{{ e }}</p>
-          } @else {
-            @for (seg of suggestedDiff(); track $index) {
-              <span [class.ins]="seg.changed">{{ seg.text }}</span>
-            }
-          }
-        </div>
-      </section>
+      <nit-diff-pane heading="This line" change="del" [segments]="originalDiff()" />
+      <nit-diff-pane
+        heading="Suggested fix"
+        change="ins"
+        [segments]="suggestedDiff()"
+        [loading]="loading()"
+        [error]="error()"
+      />
     </div>
   }
 </mat-dialog-content>

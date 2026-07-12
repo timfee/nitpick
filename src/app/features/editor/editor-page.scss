@@ -42,32 +42,3 @@ nit-findings-panel {
   background: var(--mat-sys-surface-container-low);
   min-height: 0;
 }
-.statusbar {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  min-height: 2.25rem;
-  padding: 0 1rem;
-  border-top: 1px solid var(--mat-sys-outline-variant);
-  background: var(--mat-sys-surface-container-low);
-  font: var(--mat-sys-label-medium);
-  color: var(--mat-sys-on-surface-variant);
-  white-space: nowrap;
-  overflow: hidden;
-  .sep {
-    width: 1px;
-    height: 1rem;
-    background: var(--mat-sys-outline-variant);
-    flex-shrink: 0;
-  }
-  .stat b {
-    font-weight: var(--mat-sys-title-medium-weight);
-    font-variant-numeric: tabular-nums;
-    color: var(--mat-sys-on-surface);
-  }
-  @media (max-width: 48rem) {
-    .optional {
-      display: none;
-    }
-  }
-}

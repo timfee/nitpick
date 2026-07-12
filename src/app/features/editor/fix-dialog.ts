@@ -2,19 +2,15 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import type { Editor } from '@tiptap/core';
-import type { EditorState } from '@tiptap/pm/state';
 
 import type { LintFinding } from '../../../shared/lint';
 import { LintApi } from '../../core/lint-api';
+import { blockBounds, type FixGroup } from './blocks';
+import { DiffPane } from './diff-pane';
 import { lintRangeById } from './lint-highlight';
 import type { UiFinding } from './text-index';
-
-/** Findings that sit in the same paragraph, reviewed and fixed together. */
-export interface FixGroup {
-  findings: UiFinding[];
-}
+import { diffWords } from './word-diff';
 
 export interface FixDialogData {
   editor: Editor;
@@ -23,49 +19,26 @@ export interface FixDialogData {
   onResolved: (ids: string[]) => void;
 }
 
-export interface FixDialogResult {
-  approved: number;
-  /** Editor transactions applied — how many undo steps revert everything. */
-  undoSteps: number;
-}
-
-/**
- * Buckets findings by the paragraph (textblock) they sit in, in document
- * order. Findings whose highlight is gone or spans blocks are left out — the
- * sidebar still lists them for manual review.
- */
-export function buildFixGroups(state: EditorState, findings: UiFinding[]): FixGroup[] {
-  const byBlock = new Map<number, UiFinding[]>();
-  for (const finding of findings) {
-    const range = lintRangeById(state, finding.id);
-    if (!range) continue;
-    const $from = state.doc.resolve(range.from);
-    if (range.to > $from.end($from.depth)) continue;
-    const block = $from.start($from.depth);
-    byBlock.set(block, [...(byBlock.get(block) ?? []), finding]);
-  }
-  return [...byBlock.entries()].sort(([a], [b]) => a - b).map(([, group]) => ({ findings: group }));
-}
-
 interface Step {
   findings: UiFinding[];
   original: string;
 }
 
-interface DiffSegment {
-  changed: boolean;
+interface Replacement {
+  from: number;
+  to: number;
   text: string;
 }
 
 @Component({
   selector: 'nit-fix-dialog',
-  imports: [MatButtonModule, MatDialogModule, MatProgressBarModule, MatProgressSpinnerModule],
+  imports: [MatButtonModule, MatDialogModule, MatProgressBarModule, DiffPane],
   templateUrl: './fix-dialog.html',
   styleUrl: './fix-dialog.scss',
 })
 export class FixDialog {
   private readonly data = inject<FixDialogData>(MAT_DIALOG_DATA);
-  private readonly ref = inject<MatDialogRef<FixDialog, FixDialogResult>>(MatDialogRef);
+  private readonly ref = inject<MatDialogRef<FixDialog>>(MatDialogRef);
   private readonly api = inject(LintApi);
 
   protected readonly total = this.data.groups.reduce((n, g) => n + g.findings.length, 0);
@@ -75,7 +48,6 @@ export class FixDialog {
   private readonly index = signal(0);
   protected readonly paragraph = computed(() => Math.min(this.index() + 1, this.groupCount));
   private processed = 0;
-  private undoSteps = 0;
 
   protected readonly step = signal<Step | null>(null);
   protected readonly suggestion = signal<string | null>(null);
@@ -129,17 +101,14 @@ export class FixDialog {
           .run();
       }
     } else {
-      // Apply each rule suggestion at its own (transaction-mapped) range,
-      // right to left so earlier ranges stay valid within the transaction.
+      // Apply exactly what the preview was built from: the same right-to-left,
+      // overlap-free plan, so accepted text always matches the suggested pane.
+      const plan = this.replacementPlan(live);
       editor
         .chain()
-        .command(({ state, tr }) => {
-          const spots = live
-            .map((f) => ({ f, range: lintRangeById(state, f.id) }))
-            .filter((s): s is { f: UiFinding; range: NonNullable<typeof s.range> } => !!s.range)
-            .sort((a, b) => b.range.from - a.range.from);
-          for (const { f, range } of spots) tr.insertText(f.suggestion, range.from, range.to);
-          return spots.length > 0;
+        .command(({ tr }) => {
+          for (const part of plan) tr.insertText(part.text, part.from, part.to);
+          return plan.length > 0;
         })
         .run();
     }
@@ -147,12 +116,14 @@ export class FixDialog {
     for (const f of live) this.data.editor.commands.removeLintRange(f.id);
     this.data.onResolved(live.map((f) => f.id));
     this.approved.update((n) => n + live.length);
-    this.processed += live.length;
-    this.undoSteps += 1;
     this.advance();
   }
 
   private advance(): void {
+    // Consume the group's full issue count so the progress bar completes even
+    // when some findings went stale before this step.
+    const group = this.data.groups[this.index()];
+    if (group) this.processed += group.findings.length;
     this.index.update((i) => i + 1);
     this.loadStep();
   }
@@ -171,13 +142,12 @@ export class FixDialog {
     const state = this.data.editor.state;
     const range = lintRangeById(state, live[0].id);
     if (!range) return null;
-    const $from = state.doc.resolve(range.from);
-    return { from: $from.start($from.depth), to: $from.end($from.depth) };
+    return blockBounds(state, range.from);
   }
 
   private loadStep(): void {
     if (this.index() >= this.data.groups.length) {
-      this.ref.close({ approved: this.approved(), undoSteps: this.undoSteps });
+      this.ref.close();
       return;
     }
     const live = this.liveFindings();
@@ -188,12 +158,15 @@ export class FixDialog {
     }
 
     const state = this.data.editor.state;
-    const original = state.doc.textBetween(bounds.from, bounds.to);
+    // The ' ' leaf text keeps string offsets aligned with doc positions when
+    // the paragraph contains inline leaves like hard breaks.
+    const original = state.doc.textBetween(bounds.from, bounds.to, '\n', ' ');
     this.step.set({ findings: live, original });
     this.error.set(null);
 
     if (live.every((f) => f.suggestion)) {
-      this.suggestion.set(this.composeFromSuggestions(original, live, bounds.from));
+      const plan = this.replacementPlan(live);
+      this.suggestion.set(this.composeFromSuggestions(original, plan, bounds.from));
       this.source.set('rules');
     } else {
       // At least one issue has no drop-in replacement — ask the model.
@@ -201,22 +174,42 @@ export class FixDialog {
     }
   }
 
-  /** Splices each finding's drop-in suggestion into the paragraph text. */
-  private composeFromSuggestions(original: string, live: UiFinding[], blockFrom: number): string {
+  /**
+   * The replacements to apply, in document coordinates, right to left, with
+   * overlapping findings dropped. Preview and accept both consume this, so
+   * they can never disagree.
+   */
+  private replacementPlan(live: UiFinding[]): Replacement[] {
     const state = this.data.editor.state;
     const parts = live
       .flatMap((f) => {
         const range = lintRangeById(state, f.id);
-        return range ? [{ from: range.from - blockFrom, to: range.to - blockFrom, text: f.suggestion }] : [];
+        return range ? [{ from: range.from, to: range.to, text: f.suggestion }] : [];
       })
       .sort((a, b) => b.from - a.from);
 
-    let text = original;
+    const plan: Replacement[] = [];
     let prevFrom = Number.POSITIVE_INFINITY;
     for (const part of parts) {
-      if (part.to > prevFrom || part.from < 0) continue;
-      text = text.slice(0, part.from) + part.text + text.slice(part.to);
+      if (part.to > prevFrom) continue;
+      plan.push(part);
       prevFrom = part.from;
+    }
+    return plan;
+  }
+
+  /** Splices the plan's replacements into the paragraph text for preview. */
+  private composeFromSuggestions(
+    original: string,
+    plan: Replacement[],
+    blockFrom: number,
+  ): string {
+    let text = original;
+    for (const part of plan) {
+      const from = part.from - blockFrom;
+      const to = part.to - blockFrom;
+      if (from < 0 || to > text.length) continue;
+      text = text.slice(0, from) + part.text + text.slice(to);
     }
     return text;
   }
@@ -247,61 +240,4 @@ export class FixDialog {
       this.loading.set(false);
     }
   }
-}
-
-/**
- * Word-level LCS diff. Both sides share the `changed` flag: deletions on the
- * original, insertions on the suggestion. Falls back to unmarked text when
- * the inputs are too large for the quadratic table.
- */
-function diffWords(
-  a: string,
-  b: string,
-): { original: DiffSegment[]; suggested: DiffSegment[] } {
-  const aTokens = a.split(/(\s+)/).filter(Boolean);
-  const bTokens = b.split(/(\s+)/).filter(Boolean);
-  if (aTokens.length * bTokens.length > 500_000) {
-    return { original: [{ changed: false, text: a }], suggested: [{ changed: false, text: b }] };
-  }
-
-  const rows = aTokens.length + 1;
-  const cols = bTokens.length + 1;
-  const lcs = new Uint32Array(rows * cols);
-  for (let i = aTokens.length - 1; i >= 0; i--) {
-    for (let j = bTokens.length - 1; j >= 0; j--) {
-      lcs[i * cols + j] =
-        aTokens[i] === bTokens[j]
-          ? lcs[(i + 1) * cols + j + 1] + 1
-          : Math.max(lcs[(i + 1) * cols + j], lcs[i * cols + j + 1]);
-    }
-  }
-
-  const original: DiffSegment[] = [];
-  const suggested: DiffSegment[] = [];
-  const push = (list: DiffSegment[], changed: boolean, text: string) => {
-    const last = list[list.length - 1];
-    if (last?.changed === changed) last.text += text;
-    else list.push({ changed, text });
-  };
-
-  let i = 0;
-  let j = 0;
-  while (i < aTokens.length && j < bTokens.length) {
-    if (aTokens[i] === bTokens[j]) {
-      push(original, false, aTokens[i]);
-      push(suggested, false, bTokens[j]);
-      i++;
-      j++;
-    } else if (lcs[(i + 1) * cols + j] >= lcs[i * cols + j + 1]) {
-      push(original, true, aTokens[i]);
-      i++;
-    } else {
-      push(suggested, true, bTokens[j]);
-      j++;
-    }
-  }
-  while (i < aTokens.length) push(original, true, aTokens[i++]);
-  while (j < bTokens.length) push(suggested, true, bTokens[j++]);
-
-  return { original, suggested };
 }
