@@ -7,7 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Editor } from '@tiptap/core';
+import { Editor, type ChainedCommands } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapEditorDirective } from 'ngx-tiptap';
 
@@ -16,6 +16,48 @@ import { LintApi } from '../../core/lint-api';
 import { FindingsPanel } from './findings-panel';
 import { LintHighlight, lintRangeById } from './lint-highlight';
 import { buildTextIndex, locateFindings, type UiFinding } from './text-index';
+
+interface Tool {
+  icon: string;
+  tip: string;
+  exec: (chain: ChainedCommands) => ChainedCommands;
+  /** Mark/node name (with optional attrs) that renders this tool as active. */
+  active?: [name: string, attrs?: Record<string, unknown>];
+  /** When set, the tool is disabled unless this returns true. */
+  can?: (editor: Editor) => boolean;
+}
+
+const TOOLS: Tool[] = [
+  { icon: 'undo', tip: 'Undo', exec: (c) => c.undo(), can: (e) => e.can().undo() },
+  { icon: 'redo', tip: 'Redo', exec: (c) => c.redo(), can: (e) => e.can().redo() },
+  { icon: 'format_bold', tip: 'Bold', exec: (c) => c.toggleBold(), active: ['bold'] },
+  { icon: 'format_italic', tip: 'Italic', exec: (c) => c.toggleItalic(), active: ['italic'] },
+  {
+    icon: 'strikethrough_s',
+    tip: 'Strikethrough',
+    exec: (c) => c.toggleStrike(),
+    active: ['strike'],
+  },
+  {
+    icon: 'format_h2',
+    tip: 'Heading',
+    exec: (c) => c.toggleHeading({ level: 2 }),
+    active: ['heading', { level: 2 }],
+  },
+  {
+    icon: 'format_list_bulleted',
+    tip: 'Bullet list',
+    exec: (c) => c.toggleBulletList(),
+    active: ['bulletList'],
+  },
+  {
+    icon: 'format_list_numbered',
+    tip: 'Numbered list',
+    exec: (c) => c.toggleOrderedList(),
+    active: ['orderedList'],
+  },
+  { icon: 'format_quote', tip: 'Quote', exec: (c) => c.toggleBlockquote(), active: ['blockquote'] },
+];
 
 const SAMPLE = `
 <h1>Nitpick</h1>
@@ -144,19 +186,23 @@ export class EditorPage {
     this.editor.set(editor);
   }
 
-  protected isActive(name: string, attrs?: Record<string, unknown>): boolean {
-    this.tick();
-    return this.editor()?.isActive(name, attrs) ?? false;
+  protected readonly tools = TOOLS;
+
+  protected run(tool: Tool): void {
+    const editor = this.editor();
+    if (editor) tool.exec(editor.chain().focus()).run();
   }
 
-  protected canUndo(): boolean {
+  protected isOn(tool: Tool): boolean {
     this.tick();
-    return this.editor()?.can().undo() ?? false;
+    const editor = this.editor();
+    return !!editor && !!tool.active && editor.isActive(tool.active[0], tool.active[1]);
   }
 
-  protected canRedo(): boolean {
+  protected isDisabled(tool: Tool): boolean {
     this.tick();
-    return this.editor()?.can().redo() ?? false;
+    const editor = this.editor();
+    return !editor || (tool.can ? !tool.can(editor) : false);
   }
 
   protected async check(): Promise<void> {
