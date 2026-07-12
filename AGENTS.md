@@ -10,6 +10,9 @@
   trivial components keep inline templates/styles. No Tailwind.
 - Typography is Google Sans Flex: weight 375 base, 450 for emphasis, 550 rarely.
   Sentence case everywhere — no all-caps text, no emojis, no marketing filler.
+- Fonts load from Google Fonts; the Material Symbols link in `src/index.html` is
+  subset via `icon_names`. After adding or removing a `mat-icon`, run
+  `node scripts/sync-icons.mjs` to refresh the list.
 - The lint contract is the Zod schema in `src/shared/lint.ts`; the server validates with
   it, Gemini's structured output derives from it, the client imports only its types.
   Keep numeric length constraints out of the Gemini-facing schema (Vertex rejects them);
