@@ -24,6 +24,18 @@
     font-variant-numeric: tabular-nums;
     color: var(--mat-sys-on-surface);
   }
+  .stat .badge {
+    font-weight: var(--mat-sys-title-medium-weight);
+    font-variant-numeric: tabular-nums;
+    color: var(--mat-sys-tertiary);
+    background: color-mix(in srgb, var(--mat-sys-tertiary) 14%, transparent);
+    border-radius: 0.25rem;
+    padding: 0.0625rem 0.375rem;
+    &.severe {
+      color: var(--mat-sys-error);
+      background: color-mix(in srgb, var(--mat-sys-error) 14%, transparent);
+    }
+  }
   @media (max-width: 48rem) {
     .optional {
       display: none;

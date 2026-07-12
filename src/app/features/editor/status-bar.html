@@ -4,13 +4,23 @@
     <span class="sep optional" aria-hidden="true"></span>
     <span class="stat optional"><b>{{ r.sentences }}</b> sentences</span>
     <span class="sep" aria-hidden="true"></span>
-    <span class="stat" [matTooltip]="'Flesch reading ease — ' + r.ease.verdict">
-      Ease <b>{{ r.ease.value }}</b>
+    <span class="stat" [matTooltip]="easeTooltip(r)">
+      Ease
+      @if (r.ease.status === 'ok') {
+        <b>{{ r.ease.value }}</b>
+      } @else {
+        <b class="badge" [class.severe]="r.ease.status === 'severe'">{{ r.ease.value }}</b>
+      }
     </span>
     @for (g of r.grades; track g.id) {
       <span class="sep optional" aria-hidden="true"></span>
-      <span class="stat optional" [matTooltip]="g.label + ' — ' + g.hint">
-        {{ g.short }} <b>{{ g.value }}</b>
+      <span class="stat optional" [matTooltip]="gradeTooltip(g)">
+        {{ g.short }}
+        @if (g.status === 'ok') {
+          <b>{{ g.value }}</b>
+        } @else {
+          <b class="badge" [class.severe]="g.status === 'severe'">{{ g.value }}</b>
+        }
       </span>
     }
   }
