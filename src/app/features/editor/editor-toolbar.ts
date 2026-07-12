@@ -143,9 +143,10 @@ const TOOLS: ToolbarItem[] = [
       gap: 0.5rem;
       min-width: 0;
       overflow-x: auto;
-      // Material's 48px touch targets outgrow the 40px buttons; without this
-      // padding the strip is always scrollable by the 4px they poke out.
-      padding: 0.25rem;
+      // Material's invisible 48px touch targets poke past the 40px buttons
+      // and would keep this strip permanently scrollable by 4px; turn them
+      // off at the source rather than padding around the overhang.
+      --mat-icon-button-touch-target-display: none;
       // The strip pans on overflow; a scrollbar under icon buttons reads as
       // broken chrome, so hide it (wheel, drag, and tab-to-focus still scroll).
       scrollbar-width: none;

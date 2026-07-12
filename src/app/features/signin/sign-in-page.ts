@@ -14,7 +14,7 @@ import { LintApi } from '../../core/lint-api';
     <main>
       <mat-card appearance="outlined">
         <mat-card-header>
-          <img mat-card-avatar class="brand-mark" src="favicon.svg" alt="" />
+          <img mat-card-avatar src="favicon.svg" alt="" />
           <mat-card-title>Nitpicker</mat-card-title>
           <mat-card-subtitle>Prose linting with Gemini</mat-card-subtitle>
         </mat-card-header>
@@ -54,10 +54,6 @@ import { LintApi } from '../../core/lint-api';
     }
     .error {
       color: var(--mat-sys-error);
-    }
-    .brand-mark {
-      border-radius: 50%;
-      background: white;
     }
     .signin {
       position: relative;
