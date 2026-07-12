@@ -82,16 +82,4 @@ mat-card {
     gap: 0.5rem;
     margin-top: 0.5rem;
   }
-  .suggestion-chip {
-    display: inline-flex;
-    width: auto;
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.375rem;
-    background: var(--mat-sys-surface-container-high);
-    font: var(--mat-sys-body-small);
-    overflow-wrap: anywhere;
-    .arrow {
-      color: var(--mat-sys-on-surface-variant);
-    }
-  }
 }

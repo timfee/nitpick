@@ -1,6 +1,7 @@
 import { Component, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 
+import { SuggestionChip } from './suggestion-chip';
 import type { UiFinding } from './text-index';
 
 /**
@@ -10,7 +11,7 @@ import type { UiFinding } from './text-index';
  */
 @Component({
   selector: 'nit-lint-popover',
-  imports: [MatButtonModule],
+  imports: [MatButtonModule, SuggestionChip],
   templateUrl: './lint-popover.html',
   styleUrl: './lint-popover.scss',
 })
