@@ -36,7 +36,7 @@ Environment variables override the environment-file defaults.
 | ---------------------- | ------------------ | ---------------------------------------------------- |
 | `GOOGLE_CLIENT_ID`     | from environment.ts | OAuth web client ID for Sign in with Google          |
 | `GOOGLE_CLOUD_PROJECT` | from environment.ts | Project used for Vertex AI                           |
-| `GEMINI_MODEL`         | `gemini-2.5-flash` | Vertex AI model                                      |
+| `GEMINI_MODEL`         | `gemini-3.1-flash` | Vertex AI model                                      |
 | `VERTEX_LOCATION`      | `global`           | Vertex AI location                                   |
 | `ALLOWED_DOMAIN`       | —                  | Restrict sign-in to one Workspace domain             |
 | `NG_ALLOWED_HOSTS`     | —                  | Extra SSR hostnames beyond `*.run.app` and localhost |

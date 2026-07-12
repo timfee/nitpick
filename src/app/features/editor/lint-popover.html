@@ -1,0 +1,15 @@
+<p class="msg">{{ finding().message }}</p>
+@if (finding().suggestion) {
+  <code>{{ finding().suggestion }}</code>
+}
+<div class="actions">
+  @if (finding().suggestion) {
+    <button type="button" class="primary" (click)="swap.emit()">Swap</button>
+  }
+  @if (siblings() > 1 || !finding().suggestion) {
+    <button type="button" (click)="fixLine.emit()">
+      Fix line{{ siblings() > 1 ? ' · ' + siblings() : '' }}
+    </button>
+  }
+  <button type="button" (click)="ignore.emit()">Ignore</button>
+</div>

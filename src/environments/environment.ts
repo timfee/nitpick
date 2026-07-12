@@ -11,6 +11,6 @@ export const environment = {
   region: 'us-central1',
   /** OAuth web client ID for Sign in with Google. */
   googleClientId: '204060019607-fl1ehebdji768hn3t7o2h0ngmalp4ha4.apps.googleusercontent.com',
-  geminiModel: 'gemini-2.5-flash',
+  geminiModel: 'gemini-3.1-flash',
   vertexLocation: 'global',
 };

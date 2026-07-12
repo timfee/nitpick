@@ -1,0 +1,23 @@
+import { Component, input, output } from '@angular/core';
+
+import type { UiFinding } from './text-index';
+
+/**
+ * Floating card under a clicked highlight: the finding's message, its
+ * drop-in replacement when there is one, and the escape hatches. The parent
+ * positions the host element inside the editor's scroll content.
+ */
+@Component({
+  selector: 'nit-lint-popover',
+  templateUrl: './lint-popover.html',
+  styleUrl: './lint-popover.scss',
+})
+export class LintPopover {
+  readonly finding = input.required<UiFinding>();
+  /** How many findings share this paragraph. */
+  readonly siblings = input(1);
+
+  readonly swap = output<void>();
+  readonly fixLine = output<void>();
+  readonly ignore = output<void>();
+}

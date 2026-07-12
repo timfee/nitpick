@@ -12,7 +12,7 @@ export const env = {
   /** OAuth 2.0 web client ID used for Sign in with Google. */
   clientId: first(process.env['GOOGLE_CLIENT_ID'], environment.googleClientId) ?? '',
   /** Vertex AI (Agent Platform) model to lint with. */
-  model: first(process.env['GEMINI_MODEL'], environment.geminiModel) ?? 'gemini-2.5-flash',
+  model: first(process.env['GEMINI_MODEL'], environment.geminiModel) ?? 'gemini-3.1-flash',
   /** Vertex AI location; `global` routes to the nearest capacity. */
   location: first(process.env['VERTEX_LOCATION'], environment.vertexLocation) ?? 'global',
   /** Falls back to ADC metadata when unset everywhere. */
