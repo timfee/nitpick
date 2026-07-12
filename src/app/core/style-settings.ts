@@ -83,6 +83,14 @@ export class StyleSettings {
     });
   }
 
+  setAllRules(id: string, enabled: boolean): void {
+    this.update((prefs) => {
+      const pref = prefs.packages[id];
+      if (!pref) return;
+      pref.disabledRules = enabled ? [] : (STYLE_RULES[id] ?? []).map((r) => r.id);
+    });
+  }
+
   setRule(id: string, rule: string, enabled: boolean): void {
     this.update((prefs) => {
       const pref = prefs.packages[id];

@@ -173,17 +173,31 @@ export class EditorPage {
       this.snackBar.open('The text changed — run the check again.', undefined, { duration: 4000 });
       return;
     }
+    // Counted here, not from the dialog result, so closing mid-flow with
+    // Escape still reports (and can undo) what was already accepted.
+    let fixed = 0;
+    let undoSteps = 0;
     const ref = this.dialog.open<FixDialog, FixDialogData, FixDialogResult>(FixDialog, {
-      data: { editor, groups, onResolved: (ids) => this.resolve(ids) },
+      data: {
+        editor,
+        groups,
+        onResolved: (ids) => {
+          this.resolve(ids);
+          fixed += ids.length;
+          undoSteps += 1;
+        },
+      },
       width: 'min(46rem, calc(100vw - 2rem))',
       maxWidth: 'none',
       autoFocus: 'dialog',
     });
-    const result = await firstValueFrom(ref.afterClosed());
-    if (result?.approved) {
-      const noun = result.approved === 1 ? 'issue' : 'issues';
-      this.snackBar.open(`Fixed ${result.approved} ${noun}.`, undefined, { duration: 4000 });
-    }
+    await firstValueFrom(ref.afterClosed());
+    if (!fixed) return;
+    const noun = fixed === 1 ? 'issue' : 'issues';
+    const snack = this.snackBar.open(`Fixed ${fixed} ${noun}.`, 'Undo', { duration: 6000 });
+    snack.onAction().subscribe(() => {
+      for (let i = 0; i < undoSteps; i++) editor.commands.undo();
+    });
   }
 
   private resolve(ids: string[]): void {
