@@ -60,77 +60,14 @@ nit-findings-panel {
     background: var(--mat-sys-outline-variant);
     flex-shrink: 0;
   }
-  .spacer {
-    flex: 1;
-  }
-  .all-scores {
-    border: 0;
-    background: none;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.5rem;
-    font: var(--mat-sys-label-medium);
+  .stat b {
     font-weight: var(--mat-sys-title-medium-weight);
-    color: var(--mat-sys-primary);
-    cursor: pointer;
-    &:hover {
-      background: color-mix(in srgb, var(--mat-sys-primary) 8%, transparent);
-    }
+    font-variant-numeric: tabular-nums;
+    color: var(--mat-sys-on-surface);
   }
   @media (max-width: 48rem) {
     .optional {
       display: none;
     }
-  }
-}
-
-.scores-panel {
-  padding: 0.75rem 1rem;
-  width: 17rem;
-  .ease {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.875rem;
-  }
-  .ease-value {
-    font: var(--mat-sys-headline-small);
-    font-weight: var(--mat-sys-title-medium-weight);
-  }
-  .ease-meta {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .ease-name {
-    font: var(--mat-sys-body-medium);
-  }
-  .ease-verdict {
-    font: var(--mat-sys-body-small);
-    color: var(--mat-sys-on-surface-variant);
-  }
-  .grades {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.625rem 1rem;
-  }
-  .grade {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  }
-  .grade-name {
-    font: var(--mat-sys-body-small);
-    color: var(--mat-sys-on-surface-variant);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .grade-value {
-    font: var(--mat-sys-title-small);
-  }
-  .scores-empty {
-    margin: 0;
-    font: var(--mat-sys-body-medium);
-    color: var(--mat-sys-on-surface-variant);
   }
 }

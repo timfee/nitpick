@@ -7,12 +7,16 @@
         <button
           type="button"
           [class.active]="selected() === pkg.id"
-          [class.off]="!settings.packageEnabled(pkg.id)"
+          [class.off]="!settings.enabledRuleCount(pkg.id)"
           (click)="selected.set(pkg.id)"
         >
           <span class="name">{{ pkg.label }}</span>
           <span class="count">
-            {{ settings.enabledRuleCount(pkg.id) }}/{{ rulesFor(pkg.id).length }}
+            @if (settings.enabledRuleCount(pkg.id); as n) {
+              {{ n }}/{{ rulesFor(pkg.id).length }}
+            } @else {
+              Off
+            }
           </span>
         </button>
       }
@@ -21,11 +25,6 @@
     <section>
       @if (current(); as pkg) {
         <header>
-          <mat-slide-toggle
-            [checked]="settings.packageEnabled(pkg.id)"
-            (change)="settings.setPackage(pkg.id, $event.checked)"
-            [aria-label]="'Check with ' + pkg.label"
-          />
           <div class="text">
             <span class="name">{{ pkg.label }}</span>
             <span class="summary">{{ pkg.summary }}</span>
@@ -44,7 +43,6 @@
             <li>
               <mat-checkbox
                 [checked]="settings.ruleEnabled(pkg.id, rule.id)"
-                [disabled]="!settings.packageEnabled(pkg.id)"
                 (change)="settings.setRule(pkg.id, rule.id, $event.checked)"
               >
                 <span class="rule-name">{{ rule.id }}</span>

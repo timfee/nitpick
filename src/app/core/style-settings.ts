@@ -4,18 +4,23 @@ import type { StyleSelection } from '../../shared/lint';
 import { STYLE_RULES } from '../../shared/style-rules';
 import { DEFAULT_STYLE_IDS, STYLE_PACKAGES } from '../../shared/styles';
 
-/** Per-package preference: whether it runs, and which rules are switched off. */
+/**
+ * One model, one control: a package is active exactly when it has enabled
+ * rules. Keyed by package id; the value is the enabled rule ids.
+ */
 interface StylePrefs {
-  packages: Record<string, { enabled: boolean; disabledRules: string[] }>;
+  enabled: Record<string, string[]>;
 }
 
-const STORAGE_KEY = 'nitpicker.styles';
+const STORAGE_KEY = 'nitpicker.styles.v2';
+
+const allRules = (id: string): string[] => (STYLE_RULES[id] ?? []).map((r) => r.id);
 
 const defaults = (): StylePrefs => ({
-  packages: Object.fromEntries(
+  enabled: Object.fromEntries(
     STYLE_PACKAGES.map((pkg) => [
       pkg.id,
-      { enabled: DEFAULT_STYLE_IDS.includes(pkg.id), disabledRules: [] },
+      DEFAULT_STYLE_IDS.includes(pkg.id) ? allRules(pkg.id) : [],
     ]),
   ),
 });
@@ -28,13 +33,10 @@ function load(): StylePrefs {
     if (!raw) return defaults();
     const stored = JSON.parse(raw) as Partial<StylePrefs>;
     const prefs = defaults();
-    for (const [id, pkg] of Object.entries(stored.packages ?? {})) {
-      if (!(id in prefs.packages)) continue;
-      const known = new Set((STYLE_RULES[id] ?? []).map((r) => r.id));
-      prefs.packages[id] = {
-        enabled: !!pkg.enabled,
-        disabledRules: (pkg.disabledRules ?? []).filter((r) => known.has(r)),
-      };
+    for (const [id, rules] of Object.entries(stored.enabled ?? {})) {
+      if (!(id in prefs.enabled) || !Array.isArray(rules)) continue;
+      const known = new Set(allRules(id));
+      prefs.enabled[id] = rules.filter((r): r is string => typeof r === 'string' && known.has(r));
     }
     return prefs;
   } catch {
@@ -46,59 +48,41 @@ function load(): StylePrefs {
 export class StyleSettings {
   private readonly prefs = signal<StylePrefs>(load());
 
-  /** Lint request payload: enabled packages, narrowed to their enabled rules. */
+  /** Lint request payload: active packages, narrowed to their enabled rules. */
   readonly selections = computed<StyleSelection[]>(() => {
-    const { packages } = this.prefs();
+    const { enabled } = this.prefs();
     const result: StyleSelection[] = [];
     for (const pkg of STYLE_PACKAGES) {
-      const pref = packages[pkg.id];
-      if (!pref?.enabled) continue;
-      const catalog = STYLE_RULES[pkg.id] ?? [];
-      const disabled = new Set(pref.disabledRules);
-      const rules = catalog.filter((r) => !disabled.has(r.id)).map((r) => r.id);
+      const rules = enabled[pkg.id] ?? [];
       if (!rules.length) continue;
-      result.push(rules.length === catalog.length ? { id: pkg.id } : { id: pkg.id, rules });
+      result.push(
+        rules.length === allRules(pkg.id).length ? { id: pkg.id } : { id: pkg.id, rules },
+      );
     }
     return result;
   });
 
-  packageEnabled(id: string): boolean {
-    return !!this.prefs().packages[id]?.enabled;
-  }
-
   ruleEnabled(id: string, rule: string): boolean {
-    return !this.prefs().packages[id]?.disabledRules.includes(rule);
+    return (this.prefs().enabled[id] ?? []).includes(rule);
   }
 
-  /** Count of active rules in a package, for the "n of m" settings caption. */
   enabledRuleCount(id: string): number {
-    const total = (STYLE_RULES[id] ?? []).length;
-    return total - (this.prefs().packages[id]?.disabledRules.length ?? 0);
-  }
-
-  setPackage(id: string, enabled: boolean): void {
-    this.update((prefs) => {
-      const pref = prefs.packages[id];
-      if (pref) pref.enabled = enabled;
-    });
+    return (this.prefs().enabled[id] ?? []).length;
   }
 
   setAllRules(id: string, enabled: boolean): void {
     this.update((prefs) => {
-      const pref = prefs.packages[id];
-      if (!pref) return;
-      pref.disabledRules = enabled ? [] : (STYLE_RULES[id] ?? []).map((r) => r.id);
+      prefs.enabled[id] = enabled ? allRules(id) : [];
     });
   }
 
   setRule(id: string, rule: string, enabled: boolean): void {
     this.update((prefs) => {
-      const pref = prefs.packages[id];
-      if (!pref) return;
-      const disabled = new Set(pref.disabledRules);
-      if (enabled) disabled.delete(rule);
-      else disabled.add(rule);
-      pref.disabledRules = [...disabled];
+      const set = new Set(prefs.enabled[id] ?? []);
+      if (enabled) set.add(rule);
+      else set.delete(rule);
+      // Preserve catalog order so full selections compare cleanly.
+      prefs.enabled[id] = allRules(id).filter((r) => set.has(r));
     });
   }
 
