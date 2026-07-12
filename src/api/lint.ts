@@ -19,7 +19,8 @@ Rules:
 
 // Gemini accepts standard JSON Schema, so the Zod contract doubles as the
 // structured-output schema. `$schema` is stripped since Gemini rejects it.
-const { $schema: _, ...responseJsonSchema } = z.toJSONSchema(LintReportSchema);
+const responseJsonSchema: Record<string, unknown> = z.toJSONSchema(LintReportSchema);
+delete responseJsonSchema['$schema'];
 
 /**
  * Client is created lazily so credentials/project resolve via ADC at first

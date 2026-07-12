@@ -37,7 +37,70 @@ clichés like the plague. At this point in time, most drafts could of been tight
     FindingsPanel,
   ],
   templateUrl: './editor-page.html',
-  styleUrl: './editor-page.scss',
+  styles: `
+    :host {
+      display: flex;
+      flex-direction: column;
+      height: 100dvh;
+    }
+    mat-toolbar {
+      gap: 0.25rem;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        margin-inline-end: 1rem;
+      }
+      .active {
+        background: var(--mat-sys-secondary-container);
+        color: var(--mat-sys-on-secondary-container);
+      }
+      .spacer {
+        flex: 1;
+      }
+      .words {
+        color: var(--mat-sys-on-surface-variant);
+        margin-inline-end: 0.75rem;
+        white-space: nowrap;
+      }
+      .avatar {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        vertical-align: middle;
+      }
+    }
+    .menu-user {
+      display: flex;
+      flex-direction: column;
+      padding: 0.5rem 1rem;
+      border-bottom: 1px solid var(--mat-sys-outline-variant);
+      small {
+        color: var(--mat-sys-on-surface-variant);
+      }
+    }
+    .body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr minmax(18rem, 24rem);
+      min-height: 0;
+      @media (max-width: 60rem) {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr minmax(10rem, 40dvh);
+      }
+    }
+    main {
+      overflow-y: auto;
+      padding: 2rem 1.5rem;
+      display: grid;
+    }
+    nit-findings-panel {
+      border-inline-start: 1px solid var(--mat-sys-outline-variant);
+      background: var(--mat-sys-surface-container-low);
+      min-height: 0;
+    }
+  `,
   host: {
     '(document:keydown.control.enter)': 'check()',
     '(document:keydown.meta.enter)': 'check()',

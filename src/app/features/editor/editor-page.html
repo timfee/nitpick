@@ -1,109 +1,113 @@
-<mat-toolbar class="topbar">
-  <span class="brand">
+<mat-toolbar>
+  <span class="brand mat-title-large">
     <mat-icon>spellcheck</mat-icon>
     Nitpick
   </span>
 
   @if (editor(); as ed) {
-    <span class="fmt">
-      <button
-        matIconButton
-        matTooltip="Undo"
-        [disabled]="!canUndo()"
-        (click)="ed.chain().focus().undo().run()"
-      >
-        <mat-icon>undo</mat-icon>
-      </button>
-      <button
-        matIconButton
-        matTooltip="Redo"
-        [disabled]="!canRedo()"
-        (click)="ed.chain().focus().redo().run()"
-      >
-        <mat-icon>redo</mat-icon>
-      </button>
-      <span class="sep"></span>
-      <button
-        matIconButton
-        matTooltip="Bold"
-        [class.on]="isActive('bold')"
-        (click)="ed.chain().focus().toggleBold().run()"
-      >
-        <mat-icon>format_bold</mat-icon>
-      </button>
-      <button
-        matIconButton
-        matTooltip="Italic"
-        [class.on]="isActive('italic')"
-        (click)="ed.chain().focus().toggleItalic().run()"
-      >
-        <mat-icon>format_italic</mat-icon>
-      </button>
-      <button
-        matIconButton
-        matTooltip="Strikethrough"
-        [class.on]="isActive('strike')"
-        (click)="ed.chain().focus().toggleStrike().run()"
-      >
-        <mat-icon>strikethrough_s</mat-icon>
-      </button>
-      <span class="sep"></span>
-      <button
-        matIconButton
-        matTooltip="Heading"
-        [class.on]="isActive('heading', { level: 2 })"
-        (click)="ed.chain().focus().toggleHeading({ level: 2 }).run()"
-      >
-        <mat-icon>format_h2</mat-icon>
-      </button>
-      <button
-        matIconButton
-        matTooltip="Bullet list"
-        [class.on]="isActive('bulletList')"
-        (click)="ed.chain().focus().toggleBulletList().run()"
-      >
-        <mat-icon>format_list_bulleted</mat-icon>
-      </button>
-      <button
-        matIconButton
-        matTooltip="Numbered list"
-        [class.on]="isActive('orderedList')"
-        (click)="ed.chain().focus().toggleOrderedList().run()"
-      >
-        <mat-icon>format_list_numbered</mat-icon>
-      </button>
-      <button
-        matIconButton
-        matTooltip="Quote"
-        [class.on]="isActive('blockquote')"
-        (click)="ed.chain().focus().toggleBlockquote().run()"
-      >
-        <mat-icon>format_quote</mat-icon>
-      </button>
-    </span>
+    <button
+      matIconButton
+      matTooltip="Undo"
+      aria-label="Undo"
+      [disabled]="!canUndo()"
+      (click)="ed.chain().focus().undo().run()"
+    >
+      <mat-icon>undo</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Redo"
+      aria-label="Redo"
+      [disabled]="!canRedo()"
+      (click)="ed.chain().focus().redo().run()"
+    >
+      <mat-icon>redo</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Bold"
+      aria-label="Bold"
+      [class.active]="isActive('bold')"
+      (click)="ed.chain().focus().toggleBold().run()"
+    >
+      <mat-icon>format_bold</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Italic"
+      aria-label="Italic"
+      [class.active]="isActive('italic')"
+      (click)="ed.chain().focus().toggleItalic().run()"
+    >
+      <mat-icon>format_italic</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Strikethrough"
+      aria-label="Strikethrough"
+      [class.active]="isActive('strike')"
+      (click)="ed.chain().focus().toggleStrike().run()"
+    >
+      <mat-icon>strikethrough_s</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Heading"
+      aria-label="Heading"
+      [class.active]="isActive('heading', { level: 2 })"
+      (click)="ed.chain().focus().toggleHeading({ level: 2 }).run()"
+    >
+      <mat-icon>format_h2</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Bullet list"
+      aria-label="Bullet list"
+      [class.active]="isActive('bulletList')"
+      (click)="ed.chain().focus().toggleBulletList().run()"
+    >
+      <mat-icon>format_list_bulleted</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Numbered list"
+      aria-label="Numbered list"
+      [class.active]="isActive('orderedList')"
+      (click)="ed.chain().focus().toggleOrderedList().run()"
+    >
+      <mat-icon>format_list_numbered</mat-icon>
+    </button>
+    <button
+      matIconButton
+      matTooltip="Quote"
+      aria-label="Quote"
+      [class.active]="isActive('blockquote')"
+      (click)="ed.chain().focus().toggleBlockquote().run()"
+    >
+      <mat-icon>format_quote</mat-icon>
+    </button>
   }
 
   <span class="spacer"></span>
-  <span class="words">{{ words() }} words</span>
+  <span class="words mat-label-medium">{{ words() }} words</span>
 
   <button
     matButton="filled"
-    class="check"
+    matTooltip="Ctrl/⌘ + Enter"
     [disabled]="checking() || !editor()"
     (click)="check()"
-    matTooltip="Ctrl/⌘ + Enter"
   >
     @if (checking()) {
-      <mat-spinner class="btn-spinner" diameter="18" />
+      <mat-spinner diameter="18" />
     } @else {
       <mat-icon>rate_review</mat-icon>
     }
     Check prose
   </button>
 
-  <button matIconButton class="account" [matMenuTriggerFor]="accountMenu">
+  <button matIconButton aria-label="Account" [matMenuTriggerFor]="accountMenu">
     @if (user()?.picture; as picture) {
-      <img class="avatar" [src]="picture" alt="Account" referrerpolicy="no-referrer" />
+      <img class="avatar" [src]="picture" alt="" referrerpolicy="no-referrer" />
     } @else {
       <mat-icon>account_circle</mat-icon>
     }
@@ -121,18 +125,15 @@
 </mat-toolbar>
 
 <div class="body">
-  <main class="paper">
+  <main>
     @if (editor(); as ed) {
       <tiptap-editor [editor]="ed" />
     } @else {
-      <div class="loading">
-        <mat-spinner diameter="32" />
-      </div>
+      <mat-spinner diameter="32" style="place-self: center" />
     }
   </main>
 
   <nit-findings-panel
-    class="panel"
     [findings]="findings()"
     [selectedId]="selectedId()"
     [stale]="stale()"
