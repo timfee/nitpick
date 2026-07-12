@@ -15,7 +15,9 @@ hrefs?
 keyless
 localStorage
 Nitpicker
+npm
 OAuth
+postinstall
 proselint
 repos?
 sessionStorage

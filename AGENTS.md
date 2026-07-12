@@ -19,6 +19,7 @@
   mode with Application Default Credentials — no API keys, no key files, no secrets in
   the repo.
 - Verify with `npm run lint` (typed eslint, zero findings), `npm run lint:prose`
-  (Vale over docs, comments, and template microcopy), and `npm run build`.
+  (Vale over docs, comments, and template microcopy — it self-heals mechanical
+  findings in place; `--check` only reports), and `npm run build`.
   Google Cloud resources: `scripts/init.sh` creates, `scripts/doctor.sh` verifies.
 - Commits carry no AI attribution, co-authorship, or tool mentions.

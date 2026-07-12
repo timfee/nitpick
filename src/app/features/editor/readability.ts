@@ -14,7 +14,7 @@
 export interface ReadabilityThreshold {
   /** The Vale rule's threshold for this metric. */
   limit: number;
-  /** Short human form for tooltips, e.g. "aim for 8 or less". */
+  /** Short human form for tooltips, for example "aim for 8 or less". */
   range: string;
   /** ok: within the Vale limit. high: up to 3x over. severe: beyond that. */
   status: 'ok' | 'high' | 'severe';
@@ -23,7 +23,7 @@ export interface ReadabilityThreshold {
 export interface ReadabilityGrade extends ReadabilityThreshold {
   id: string;
   label: string;
-  /** Compact status-bar label, e.g. "FK". */
+  /** Compact status-bar label, for example "FK". */
   short: string;
   value: number;
   /** One-line tooltip explaining what the number means. */

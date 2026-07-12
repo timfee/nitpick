@@ -28,7 +28,7 @@ export class StatusBar {
   }
 }
 
-/** Lowercases the leading word unless it's an acronym (e.g. "US school..."). */
+/** Lowercases the leading word unless it's an acronym (for example "US school..."). */
 function lowerFirst(s: string): string {
   return /^[A-Z]{2}/.test(s) ? s : s.charAt(0).toLowerCase() + s.slice(1);
 }

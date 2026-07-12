@@ -19,6 +19,6 @@ export const env = {
   location: first(process.env['VERTEX_LOCATION'], environment.vertexLocation) ?? 'global',
   /** Falls back to ADC metadata when unset everywhere. */
   project: first(process.env['GOOGLE_CLOUD_PROJECT'], environment.project),
-  /** Optional Workspace domain (`hd` claim) allow-list, e.g. `example.com`. */
+  /** Optional Workspace domain (`hd` claim) allow-list, for example `example.com`. */
   allowedDomain: process.env['ALLOWED_DOMAIN'],
 };

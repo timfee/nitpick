@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Prose linting with Vale across the three places prose lives:
+ * Self-healing prose linting with Vale across the three places prose lives:
  *
  *   1. Markdown docs — linted directly.
  *   2. Code comments in .ts/.mjs — Vale lints only comments in code formats.
@@ -13,19 +13,32 @@
  *      line and column numbers exact.
  *
  * Masked copies go to a temp mirror as `<path>.txt` / `<path>.js`; findings
- * are mapped back to the real files. Exits non-zero on errors or warnings;
- * suggestions are informational.
+ * are mapped back to the real files. Because masking preserves positions,
+ * fixes apply directly to the real sources.
+ *
+ * By default the script heals what it safely can — Latin abbreviations,
+ * sentence spacing, exclamation points, emojis, repeated words — re-linting
+ * until nothing fixable remains, then reports what needs human judgment
+ * (spelling, filler, heading case). Pass --check to only report.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { parseTemplate } from '@angular/compiler';
 
+const checkOnly = process.argv.includes('--check');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const vale = path.join(root, 'node_modules', '.bin', 'vale');
+
+// Use the wrapper package's real path: npm does not always link
+// node_modules/.bin/vale because the binary appears only during the
+// package's postinstall download. Rebuild once if it's missing entirely.
+const vale = path.join(root, 'node_modules', '@vvago', 'vale', 'bin', 'vale');
+if (!existsSync(vale)) {
+  execFileSync('npm', ['rebuild', '@vvago/vale'], { cwd: root, stdio: 'inherit' });
+}
 
 /** Static attributes whose values are user-visible or read by screen readers. */
 const TEXT_ATTRIBUTES = new Set([
@@ -105,41 +118,6 @@ const inlineTemplates = (source) => {
   return found;
 };
 
-const work = mkdtempSync(path.join(tmpdir(), 'nitpick-prose-'));
-const masked = [];
-const emit = (file, suffix, content) => {
-  const rel = `${file}${suffix}`;
-  const dest = path.join(work, rel);
-  mkdirSync(path.dirname(dest), { recursive: true });
-  writeFileSync(dest, content);
-  masked.push(rel);
-};
-
-for (const file of templates) {
-  const source = readFileSync(path.join(root, file), 'utf8');
-  const { nodes, errors } = parseTemplate(source, file, { preserveWhitespaces: true });
-  if (errors?.length) {
-    console.error(`${file}: template parse error — ${errors[0].msg}`);
-    process.exitCode = 2;
-    continue;
-  }
-  emit(file, '.txt', maskTemplate(source, nodes));
-}
-
-for (const file of typescript) {
-  const source = readFileSync(path.join(root, file), 'utf8');
-  for (const { start, text } of inlineTemplates(source)) {
-    const { nodes, errors } = parseTemplate(text, file, { preserveWhitespaces: true });
-    if (errors?.length) continue;
-    const mask = blank(source.slice(0, start)) + maskTemplate(text, nodes);
-    emit(file, '.txt', mask + blank(source.slice(start + text.length)));
-  }
-}
-
-for (const file of scripts) {
-  emit(file, '.js', readFileSync(path.join(root, file), 'utf8'));
-}
-
 const run = (args, cwd) => {
   const { stdout, stderr, status, error } = spawnSync(
     vale,
@@ -160,21 +138,119 @@ const run = (args, cwd) => {
   return JSON.parse(stdout);
 };
 
-const results = new Map();
-const record = (byFile, mapPath) => {
-  for (const [file, alerts] of Object.entries(byFile)) {
-    const real = mapPath(file);
-    results.set(real, [...(results.get(real) ?? []), ...alerts]);
+/** One full lint pass; returns Map of real file path → Vale alerts. */
+const lintOnce = () => {
+  const work = mkdtempSync(path.join(tmpdir(), 'nitpick-prose-'));
+  const masked = [];
+  const emit = (file, suffix, content) => {
+    const rel = `${file}${suffix}`;
+    const dest = path.join(work, rel);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    writeFileSync(dest, content);
+    masked.push(rel);
+  };
+
+  for (const file of templates) {
+    const source = readFileSync(path.join(root, file), 'utf8');
+    const { nodes, errors } = parseTemplate(source, file, { preserveWhitespaces: true });
+    if (errors?.length) {
+      console.error(`${file}: template parse error — ${errors[0].msg}`);
+      process.exitCode = 2;
+      continue;
+    }
+    emit(file, '.txt', maskTemplate(source, nodes));
   }
+
+  for (const file of typescript) {
+    const source = readFileSync(path.join(root, file), 'utf8');
+    for (const { start, text } of inlineTemplates(source)) {
+      const { nodes, errors } = parseTemplate(text, file, { preserveWhitespaces: true });
+      if (errors?.length) continue;
+      const mask = blank(source.slice(0, start)) + maskTemplate(text, nodes);
+      emit(file, '.txt', mask + blank(source.slice(start + text.length)));
+    }
+  }
+
+  for (const file of scripts) {
+    emit(file, '.js', readFileSync(path.join(root, file), 'utf8'));
+  }
+
+  const results = new Map();
+  const record = (byFile, mapPath) => {
+    for (const [file, alerts] of Object.entries(byFile)) {
+      const real = mapPath(file);
+      results.set(real, [...(results.get(real) ?? []), ...alerts]);
+    }
+  };
+
+  try {
+    record(run([...markdown, ...typescript], root), (f) => f);
+    if (masked.length) {
+      record(run(masked, work), (f) => f.replace(/\.(txt|js)$/, ''));
+    }
+  } finally {
+    rmSync(work, { recursive: true, force: true });
+  }
+  return results;
 };
 
-try {
-  record(run([...markdown, ...typescript], root), (f) => f);
-  if (masked.length) {
-    record(run(masked, work), (f) => f.replace(/\.(txt|js)$/, ''));
+/**
+ * Mechanical fixes, keyed by check. Each takes the flagged text and returns
+ * the healed replacement. Checks that need judgment (spelling, filler,
+ * heading case) have no entry and are reported instead.
+ */
+const fixers = {
+  'Nitpick.Latin': (text) =>
+    text
+      .replace(/e\.g\./i, (m) => (m.startsWith('E') ? 'For example' : 'for example'))
+      .replace(/i\.e\./i, (m) => (m.startsWith('I') ? 'That is' : 'that is')),
+  'Nitpick.Spacing': (text) => text.replace(/ {2,}/g, ' '),
+  'Nitpick.Exclamation': (text) => text.replace('!', '.'),
+  'Nitpick.Emoji': () => '',
+  'Vale.Repetition': (text) => text.split(/\s+/)[0],
+};
+
+/** Applies fixable alerts to a file; returns how many were applied. */
+const heal = (file, alerts) => {
+  const target = path.join(root, file);
+  let source = readFileSync(target, 'utf8');
+  const lineStarts = [0];
+  for (let i = 0; i < source.length; i += 1) {
+    if (source[i] === '\n') lineStarts.push(i + 1);
   }
-} finally {
-  rmSync(work, { recursive: true, force: true });
+  const edits = alerts
+    .map((a) => ({
+      start: lineStarts[a.Line - 1] + a.Span[0] - 1,
+      end: lineStarts[a.Line - 1] + a.Span[1],
+      check: a.Check,
+    }))
+    .sort((a, b) => b.start - a.start);
+  let applied = 0;
+  for (const { start, end, check } of edits) {
+    const text = source.slice(start, end);
+    const healed = fixers[check](text);
+    if (healed === text) continue;
+    source = source.slice(0, start) + healed + source.slice(end);
+    applied += 1;
+  }
+  if (applied) writeFileSync(target, source);
+  return applied;
+};
+
+const MAX_PASSES = 5;
+let results = lintOnce();
+
+if (!checkOnly) {
+  for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
+    let healedCount = 0;
+    for (const [file, alerts] of results) {
+      const fixable = alerts.filter((a) => fixers[a.Check]);
+      if (fixable.length) healedCount += heal(file, fixable);
+    }
+    if (!healedCount) break;
+    console.log(`Pass ${pass}: healed ${healedCount} finding${healedCount === 1 ? '' : 's'}.`);
+    results = lintOnce();
+  }
 }
 
 const counts = { error: 0, warning: 0, suggestion: 0 };
@@ -190,8 +266,7 @@ for (const file of [...results.keys()].sort()) {
   }
 }
 
-const failed = counts.error + counts.warning > 0;
 console.log(
   `\n${counts.error} errors, ${counts.warning} warnings, ${counts.suggestion} suggestions.`,
 );
-if (failed) process.exitCode = 1;
+if (counts.error + counts.warning > 0) process.exitCode = 1;

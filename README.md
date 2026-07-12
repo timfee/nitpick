@@ -75,8 +75,11 @@ and `npm run build`.
 `npm run lint:prose` runs [Vale](https://vale.sh) over the prose in this
 repo: Markdown docs, code comments, and template microcopy — visible text
 plus labels and tooltips, extracted with the Angular compiler so `@if`/`@for`
-control flow doesn't confuse it. The house rules (sentence-case headings, no
-marketing filler, no emojis, no exclamation points) live in
-`.vale/styles/Nitpick/`; project words go in
-`.vale/styles/config/vocabularies/Nitpick/accept.txt`. CI runs the same
-check through `.github/workflows/prose.yml`.
+control flow doesn't confuse it.
+
+The script self-heals: mechanical findings (Latin abbreviations, double
+spacing, exclamation points, emojis, repeated words) are fixed in place and
+re-linted until stable; anything needing judgment — spelling, marketing
+filler, heading case — is reported for a human. Pass `--check` to report
+without touching files. The house rules live in `.vale/styles/Nitpick/`;
+project words go in `.vale/styles/config/vocabularies/Nitpick/accept.txt`.
