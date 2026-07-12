@@ -2,7 +2,7 @@ import { GoogleGenAI } from '@google/genai';
 import { GoogleAuth } from 'google-auth-library';
 import { z } from 'zod';
 
-import { LintReportSchema, type LintReport } from '../shared/lint';
+import { LintReportSchema, MAX_FINDINGS, type LintReport } from '../shared/lint';
 import { env } from './env';
 
 const SYSTEM_INSTRUCTION = `You are Nitpick, an expert copy editor in the spirit of proselint.
@@ -48,5 +48,7 @@ export async function lintText(text: string): Promise<LintReport> {
   });
   const { findings } = LintReportSchema.parse(JSON.parse(response.text ?? '{}'));
   // Drop hallucinated quotes the editor would never be able to highlight.
-  return { findings: findings.filter((f) => text.includes(f.quote)) };
+  return {
+    findings: findings.filter((f) => f.quote && text.includes(f.quote)).slice(0, MAX_FINDINGS),
+  };
 }

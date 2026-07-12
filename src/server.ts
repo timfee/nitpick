@@ -21,6 +21,8 @@ const angularApp = new AngularNodeAppEngine({
     '*.run.app',
     ...(process.env['NG_ALLOWED_HOSTS']?.split(',').map((h) => h.trim()) ?? []),
   ],
+  // Cloud Run's front end sets X-Forwarded-* and is trusted.
+  trustProxyHeaders: true,
 });
 
 app.set('trust proxy', true); // Cloud Run sits behind a proxy
