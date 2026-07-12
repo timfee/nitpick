@@ -4,7 +4,23 @@
  * scores without a model call.
  */
 
-export interface ReadabilityGrade {
+/**
+ * Acceptable-range grading shared by every metric. `limit` is the threshold
+ * the upstream Vale "Readability" style package (errata-ai/Readability) warns
+ * at — see each rule's `condition` in Readability/*.yml. For grade-level
+ * metrics (lower is easier) the rule fires above the limit; for the inverted
+ * Flesch reading ease (higher is easier) it fires below it.
+ */
+export interface ReadabilityThreshold {
+  /** The Vale rule's threshold for this metric. */
+  limit: number;
+  /** Short human form for tooltips, e.g. "aim for 8 or less". */
+  range: string;
+  /** ok: within the Vale limit. high: up to 3x over. severe: beyond that. */
+  status: 'ok' | 'high' | 'severe';
+}
+
+export interface ReadabilityGrade extends ReadabilityThreshold {
   id: string;
   label: string;
   /** Compact status-bar label, e.g. "FK". */
@@ -18,7 +34,7 @@ export interface ReadabilityReport {
   words: number;
   sentences: number;
   /** Flesch reading ease, 0–100, higher is easier. */
-  ease: { value: number; verdict: string };
+  ease: ReadabilityThreshold & { value: number; verdict: string };
   /** Grade-level metrics, lower is easier. */
   grades: ReadabilityGrade[];
 }
@@ -51,6 +67,9 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       label: 'Flesch-Kincaid',
       value: 0.39 * wps + 11.8 * spw - 15.59,
       hint: 'US school grade needed to follow the text',
+      limit: 8,
+      range: 'aim for 8 or less',
+      status: 'ok',
     },
     {
       id: 'GunningFog',
@@ -58,6 +77,9 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       label: 'Gunning fog',
       value: 0.4 * (wps + 100 * (polysyllables / words.length)),
       hint: 'Years of schooling needed on a first read',
+      limit: 10,
+      range: 'aim for 10 or less',
+      status: 'ok',
     },
     {
       id: 'SMOG',
@@ -65,6 +87,9 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       label: 'SMOG',
       value: 1.043 * Math.sqrt(polysyllables * (30 / sentences)) + 3.1291,
       hint: 'Grade estimate from long-word density',
+      limit: 10,
+      range: 'aim for 10 or less',
+      status: 'ok',
     },
     {
       id: 'ColemanLiau',
@@ -72,6 +97,9 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       label: 'Coleman-Liau',
       value: 5.88 * (letters / words.length) - 29.6 * (sentences / words.length) - 15.8,
       hint: 'Grade estimate from letters per word',
+      limit: 9,
+      range: 'aim for 9 or less',
+      status: 'ok',
     },
     {
       id: 'AutomatedReadability',
@@ -79,6 +107,9 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       label: 'Automated readability',
       value: 4.71 * (letters / words.length) + 0.5 * wps - 21.43,
       hint: 'Grade estimate from characters and sentence length',
+      limit: 8,
+      range: 'aim for 8 or less',
+      status: 'ok',
     },
     {
       id: 'LIX',
@@ -86,15 +117,42 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       label: 'LIX',
       value: wps + 100 * (longWords / words.length),
       hint: 'Long-word density; 40 and up reads as difficult',
+      limit: 35,
+      range: 'aim for 35 or less',
+      status: 'ok',
     },
-  ].map((g) => ({ ...g, value: Math.max(0, round1(g.value)) }));
+  ].map((g) => {
+    const value = Math.max(0, round1(g.value));
+    return { ...g, value, status: gradeStatus(value, g.limit) };
+  });
 
+  const easeLimit = 70;
   return {
     words: words.length,
     sentences,
-    ease: { value: Math.round(ease), verdict: verdictFor(ease) },
+    ease: {
+      value: Math.round(ease),
+      verdict: verdictFor(ease),
+      limit: easeLimit,
+      range: 'aim for 70 or more',
+      status: easeStatus(ease, easeLimit),
+    },
     grades,
   };
+}
+
+/** Grade-level metrics: lower is easier, so the Vale rule fires above `limit`. */
+function gradeStatus(value: number, limit: number): ReadabilityThreshold['status'] {
+  if (value <= limit) return 'ok';
+  if (value <= 3 * limit) return 'high';
+  return 'severe';
+}
+
+/** Flesch reading ease is inverted: higher is easier, so the rule fires below `limit`. */
+function easeStatus(value: number, limit: number): ReadabilityThreshold['status'] {
+  if (value >= limit) return 'ok';
+  if (value >= limit / 3) return 'high';
+  return 'severe';
 }
 
 function verdictFor(ease: number): string {
