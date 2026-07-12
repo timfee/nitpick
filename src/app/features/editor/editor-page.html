@@ -64,39 +64,19 @@
 </div>
 
 <footer class="statusbar">
-  <span>{{ words() }} words</span>
+  <span class="stat"><b>{{ words() }}</b> words</span>
   @if (readability(); as r) {
     <span class="sep optional" aria-hidden="true"></span>
-    <span class="optional">{{ r.sentences }} sentences</span>
+    <span class="stat optional"><b>{{ r.sentences }}</b> sentences</span>
     <span class="sep" aria-hidden="true"></span>
-    <span>{{ r.ease.verdict }}</span>
-    <span class="sep optional" aria-hidden="true"></span>
-    <span class="optional">Grade {{ r.grades[0].value }}</span>
-  }
-  <span class="spacer"></span>
-  <button type="button" class="all-scores" [matMenuTriggerFor]="scoresMenu">All scores</button>
-</footer>
-
-<mat-menu #scoresMenu xPosition="before">
-  <div class="scores-panel">
-    @if (readability(); as r) {
-      <div class="ease">
-        <span class="ease-value">{{ r.ease.value }}</span>
-        <div class="ease-meta">
-          <span class="ease-name">Flesch reading ease</span>
-          <span class="ease-verdict">{{ r.ease.verdict }}</span>
-        </div>
-      </div>
-      <div class="grades">
-        @for (g of r.grades; track g.id) {
-          <div class="grade" [matTooltip]="g.hint">
-            <span class="grade-name">{{ g.label }}</span>
-            <span class="grade-value">{{ g.value }}</span>
-          </div>
-        }
-      </div>
-    } @else {
-      <p class="scores-empty">Not enough text to score.</p>
+    <span class="stat" [matTooltip]="'Flesch reading ease — ' + r.ease.verdict">
+      Ease <b>{{ r.ease.value }}</b>
+    </span>
+    @for (g of r.grades; track g.id) {
+      <span class="sep optional" aria-hidden="true"></span>
+      <span class="stat optional" [matTooltip]="g.label + ' — ' + g.hint">
+        {{ g.short }} <b>{{ g.value }}</b>
+      </span>
     }
-  </div>
-</mat-menu>
+  }
+</footer>

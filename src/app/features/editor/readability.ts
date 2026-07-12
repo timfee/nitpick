@@ -7,6 +7,8 @@
 export interface ReadabilityGrade {
   id: string;
   label: string;
+  /** Compact status-bar label, e.g. "FK". */
+  short: string;
   value: number;
   /** One-line tooltip explaining what the number means. */
   hint: string;
@@ -45,36 +47,42 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
   const grades: ReadabilityGrade[] = [
     {
       id: 'FleschKincaid',
+      short: 'FK',
       label: 'Flesch-Kincaid',
       value: 0.39 * wps + 11.8 * spw - 15.59,
       hint: 'US school grade needed to follow the text',
     },
     {
       id: 'GunningFog',
+      short: 'Fog',
       label: 'Gunning fog',
       value: 0.4 * (wps + 100 * (polysyllables / words.length)),
       hint: 'Years of schooling needed on a first read',
     },
     {
       id: 'SMOG',
+      short: 'SMOG',
       label: 'SMOG',
       value: 1.043 * Math.sqrt(polysyllables * (30 / sentences)) + 3.1291,
       hint: 'Grade estimate from long-word density',
     },
     {
       id: 'ColemanLiau',
+      short: 'CL',
       label: 'Coleman-Liau',
       value: 5.88 * (letters / words.length) - 29.6 * (sentences / words.length) - 15.8,
       hint: 'Grade estimate from letters per word',
     },
     {
       id: 'AutomatedReadability',
+      short: 'ARI',
       label: 'Automated readability',
       value: 4.71 * (letters / words.length) + 0.5 * wps - 21.43,
       hint: 'Grade estimate from characters and sentence length',
     },
     {
       id: 'LIX',
+      short: 'LIX',
       label: 'LIX',
       value: wps + 100 * (longWords / words.length),
       hint: 'Long-word density; 40 and up reads as difficult',
