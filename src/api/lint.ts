@@ -1,46 +1,61 @@
-import { GoogleGenAI } from '@google/genai';
-import { GoogleAuth } from 'google-auth-library';
-import { z } from 'zod';
-
-import { LintReportSchema, MAX_FINDINGS, type LintReport } from '../shared/lint';
+import { LintReportSchema, MAX_FINDINGS, type LintReport, type StyleSelection } from '../shared/lint';
+import { STYLE_RULES } from '../shared/style-rules';
+import { DEFAULT_STYLE_IDS, STYLE_PACKAGES } from '../shared/styles';
 import { env } from './env';
+import { getGenAi, toResponseJsonSchema } from './genai';
 
-const SYSTEM_INSTRUCTION = `You are Nitpicker, an expert copy editor in the spirit of proselint.
-Lint the user's prose and report concrete, actionable findings: redundancies, clichés,
-weasel words, jargon, needless passive voice, wordiness, spelling, grammar, punctuation,
-inconsistencies, and unclear phrasing.
+const SYSTEM_INSTRUCTION = `You are Nitpicker, an expert copy editor.
+Lint the user's prose against the style packages listed below and report concrete,
+actionable findings.
 
 Rules:
+- Apply only the checks listed below; each check is "package/RuleName: what it flags".
+- "rule" must name the check that fired, exactly as listed, or "" if none fits cleanly.
 - "quote" must be the smallest problematic span, copied character-for-character from the text.
 - Never invent issues; when the text is clean, return an empty findings list.
 - Prefer few high-value findings over many trivial ones; never report the same span twice.
 - "suggestion" must be a drop-in replacement preserving the surrounding grammar, or "" if none.
 - Match the author's language and dialect.`;
 
-// Gemini accepts standard JSON Schema, so the Zod contract doubles as the
-// structured-output schema. `$schema` is stripped since Gemini rejects it.
-const responseJsonSchema: Record<string, unknown> = z.toJSONSchema(LintReportSchema);
-delete responseJsonSchema['$schema'];
+const responseJsonSchema = toResponseJsonSchema(LintReportSchema);
 
 /**
- * Client is created lazily so credentials/project resolve via ADC at first
- * request: the metadata server on Cloud Run, `gcloud auth application-default
- * login` locally. No API keys anywhere.
+ * Expands the client's style selections into per-check prompt lines, dropping
+ * unknown package/rule ids against the generated catalog. Falls back to the
+ * default packages when nothing valid is selected.
  */
-let client: Promise<GoogleGenAI> | undefined;
-const getClient = () =>
-  (client ??= (async () => {
-    const project = env.project ?? (await new GoogleAuth().getProjectId());
-    return new GoogleGenAI({ vertexai: true, project, location: env.location });
-  })());
+function styleInstructions(styles: StyleSelection[] | undefined): string {
+  const wanted: StyleSelection[] = styles?.length
+    ? styles
+    : DEFAULT_STYLE_IDS.map((id) => ({ id }));
+  const sections: string[] = [];
 
-export async function lintText(text: string): Promise<LintReport> {
-  const ai = await getClient();
+  for (const selection of wanted) {
+    const pkg = STYLE_PACKAGES.find((p) => p.id === selection.id);
+    if (!pkg) continue;
+    const catalog = STYLE_RULES[pkg.id] ?? [];
+    const enabled = new Set(selection.rules ?? catalog.map((r) => r.id));
+    const checks = catalog.filter((r) => enabled.has(r.id));
+    if (!checks.length) continue;
+    sections.push(
+      `${pkg.label}: ${pkg.prompt}\n` +
+        checks.map((r) => `- ${pkg.id}/${r.id}: ${r.hint || r.id}`).join('\n'),
+    );
+  }
+
+  return sections.join('\n\n');
+}
+
+export async function lintText(text: string, styles?: StyleSelection[]): Promise<LintReport> {
+  const instructions = styleInstructions(styles);
+  if (!instructions) return { findings: [] };
+
+  const ai = await getGenAi();
   const response = await ai.models.generateContent({
     model: env.model,
     contents: text,
     config: {
-      systemInstruction: SYSTEM_INSTRUCTION,
+      systemInstruction: `${SYSTEM_INSTRUCTION}\n\nStyle packages to apply:\n\n${instructions}`,
       responseMimeType: 'application/json',
       responseJsonSchema,
       temperature: 0.2,

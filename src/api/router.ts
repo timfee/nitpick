@@ -1,15 +1,16 @@
 import { Router, json, type ErrorRequestHandler } from 'express';
 import { z } from 'zod';
 
-import { LintRequestSchema } from '../shared/lint';
+import { FixRequestSchema, LintRequestSchema } from '../shared/lint';
 import { requireUser } from './auth';
 import { env } from './env';
+import { fixText } from './fix';
 import { lintText } from './lint';
 
 export const apiRouter: Router = Router();
 
 apiRouter.get('/config', (_req, res) => {
-  res.json({ clientId: env.clientId });
+  res.json({ clientId: env.clientId, model: env.model });
 });
 
 apiRouter.post('/lint', json({ limit: '256kb' }), requireUser, async (req, res) => {
@@ -18,7 +19,16 @@ apiRouter.post('/lint', json({ limit: '256kb' }), requireUser, async (req, res) 
     res.status(400).json({ error: z.prettifyError(parsed.error) });
     return;
   }
-  res.json(await lintText(parsed.data.text));
+  res.json(await lintText(parsed.data.text, parsed.data.styles));
+});
+
+apiRouter.post('/fix', json({ limit: '256kb' }), requireUser, async (req, res) => {
+  const parsed = FixRequestSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: z.prettifyError(parsed.error) });
+    return;
+  }
+  res.json(await fixText(parsed.data));
 });
 
 // Express 5 forwards rejected promises here automatically. The four-argument

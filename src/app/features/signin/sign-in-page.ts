@@ -94,7 +94,7 @@ export class SignInPage {
     try {
       // The build bakes the client ID in; the API call is only a fallback
       // for deployments configured purely through environment variables.
-      const clientId = environment.googleClientId || (await this.api.clientId()).clientId;
+      const clientId = environment.googleClientId || (await this.api.config()).clientId;
       if (!clientId) throw new Error('missing client id');
       await this.auth.renderButton(this.gsiHost().nativeElement, clientId);
       this.ready.set(true);
