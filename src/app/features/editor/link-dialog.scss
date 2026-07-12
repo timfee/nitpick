@@ -1,4 +1,7 @@
 .field {
   width: 100%;
   min-width: 20rem;
+  // Clears the outline notch: the floating label extends above the field's
+  // border box, and the dialog content's scroll viewport clips it otherwise.
+  margin-top: 0.5rem;
 }
