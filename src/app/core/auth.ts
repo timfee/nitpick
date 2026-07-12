@@ -13,7 +13,7 @@ declare const google: {
   accounts: {
     id: {
       initialize(config: object): void;
-      prompt(): void;
+      renderButton(host: HTMLElement, options: object): void;
       disableAutoSelect(): void;
     };
   };
@@ -71,12 +71,16 @@ export class Auth {
     return this.credential();
   }
 
-  /** Loads Google Identity Services and registers the credential callback. */
-  async initSignIn(clientId: string): Promise<void> {
+  /**
+   * Renders Google's real sign-in button into `host`. The caller overlays it
+   * transparently on a Material button: Google's own click handling is the
+   * only reliable way to open the sign-in popup (`prompt()` gets suppressed
+   * by One Tap cooldowns), while the visible button stays ours.
+   */
+  async renderButton(host: HTMLElement, clientId: string): Promise<void> {
     await loadGis();
     google.accounts.id.initialize({
       client_id: clientId,
-      use_fedcm_for_prompt: true,
       callback: ({ credential }: { credential: string }) => {
         const secure = location.protocol === 'https:' ? '; secure' : '';
         document.cookie = `${COOKIE}=${encodeURIComponent(credential)}; path=/; max-age=3600; samesite=lax${secure}`;
@@ -84,11 +88,11 @@ export class Auth {
         void this.router.navigateByUrl('/');
       },
     });
-  }
-
-  /** Opens the Google sign-in prompt; call from a user gesture. */
-  promptSignIn(): void {
-    google.accounts.id.prompt();
+    google.accounts.id.renderButton(host, {
+      type: 'standard',
+      size: 'large',
+      width: Math.max(host.clientWidth, 200),
+    });
   }
 
   signOut(): void {

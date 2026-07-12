@@ -1,4 +1,4 @@
-import { Component, afterNextRender, inject, signal } from '@angular/core';
+import { Component, ElementRef, afterNextRender, inject, signal, viewChild } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -25,10 +25,18 @@ import { LintApi } from '../../core/lint-api';
           }
         </mat-card-content>
         <mat-card-actions>
-          <button matButton="filled" [disabled]="!ready()" (click)="signIn()">
-            <mat-icon>login</mat-icon>
-            Sign in with Google
-          </button>
+          <!--
+            Our button is the visual; Google's real button sits transparently
+            on top and receives the click — the only reliable way to open the
+            sign-in popup.
+          -->
+          <div class="signin" [class.ready]="ready()">
+            <button matButton="filled" tabindex="-1" aria-hidden="true">
+              <mat-icon>login</mat-icon>
+              Sign in with Google
+            </button>
+            <div class="gsi" #gsi></div>
+          </div>
         </mat-card-actions>
       </mat-card>
     </main>
@@ -47,11 +55,33 @@ import { LintApi } from '../../core/lint-api';
     .error {
       color: var(--mat-sys-error);
     }
+    .signin {
+      position: relative;
+      display: inline-block;
+
+      button {
+        white-space: nowrap;
+        pointer-events: none;
+      }
+
+      .gsi {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        opacity: 0.001;
+        cursor: pointer;
+      }
+
+      &:not(.ready) .gsi {
+        pointer-events: none;
+      }
+    }
   `,
 })
 export class SignInPage {
   private readonly auth = inject(Auth);
   private readonly api = inject(LintApi);
+  private readonly gsiHost = viewChild.required<ElementRef<HTMLElement>>('gsi');
 
   protected readonly error = signal('');
   protected readonly ready = signal(false);
@@ -60,17 +90,13 @@ export class SignInPage {
     afterNextRender(() => void this.init());
   }
 
-  protected signIn(): void {
-    this.auth.promptSignIn();
-  }
-
   private async init(): Promise<void> {
     try {
       // The build bakes the client ID in; the API call is only a fallback
       // for deployments configured purely through environment variables.
       const clientId = environment.googleClientId || (await this.api.clientId()).clientId;
       if (!clientId) throw new Error('missing client id');
-      await this.auth.initSignIn(clientId);
+      await this.auth.renderButton(this.gsiHost().nativeElement, clientId);
       this.ready.set(true);
     } catch {
       this.error.set('Sign-in is unavailable — no OAuth client ID is configured.');

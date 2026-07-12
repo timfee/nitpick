@@ -64,6 +64,13 @@ clichés like the plague. At this point in time, most drafts could of been tight
         color: var(--mat-sys-on-surface-variant);
         margin-inline-end: 0.75rem;
         white-space: nowrap;
+        @media (max-width: 48rem) {
+          display: none;
+        }
+      }
+      .check {
+        white-space: nowrap;
+        flex-shrink: 0;
       }
     }
     .body {
