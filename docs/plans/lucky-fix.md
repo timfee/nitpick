@@ -219,6 +219,32 @@ Acceptance: lint+build clean; keyboard/screen-reader reachable (button has
 aria-label including the count; popover traps focus per Material conventions);
 zero-findings state shows no button; double-click during a run is a no-op.
 
+### WP3 addendum — design review outcomes (binding on WP3)
+
+Rendered mockups of the four states live in `docs/plans/lucky-fix-mockups/`.
+A design crit of those mockups produced these required changes:
+
+1. **Unify the severity color taxonomy end to end.** Card left-borders and
+   editor squiggles/highlights must use the same color per severity so a user
+   can trace card → text without reading labels. (The tokens already exist:
+   `.severity-*` classes in `styles.scss` drive both — verify no state in the
+   new UI bypasses them.)
+2. **"Editing is paused while fixes are applied" is a state banner, not a
+   footnote.** Give it a tinted container row, not small gray caption text —
+   it explains why the cursor stopped responding.
+3. **Progress bar must be visually prominent** under the "Fixing x of y" pill,
+   not just the count text — peripheral-vision feedback for a 10+ item run.
+4. **Collapse resolved cards to a single line** (check + category + quote
+   inline) once fixed; full-height resolved cards make the list grow at
+   exactly the moment it should be shrinking.
+5. **De-emphasize destructive/rare actions:** in the instructions popover,
+   "Clear" must be visually lighter and spatially separated from "Done"; in
+   the completion snackbar, "Review changes" is the primary action and
+   "Undo all" drops to tertiary weight.
+6. **The instructions pencil needs a tooltip and a persistent filled-state
+   badge** (dot) whenever saved instructions exist — visible in the idle
+   state, not only during a run.
+
 ### WP4 — Prompt quality + polish (after WP1–3 merge)
 
 1. Tune the per-group system instruction against real docs: verify edits
