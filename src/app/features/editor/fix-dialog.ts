@@ -1,7 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
-import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import type { Editor } from '@tiptap/core';
@@ -26,6 +25,8 @@ export interface FixDialogData {
 
 export interface FixDialogResult {
   approved: number;
+  /** Editor transactions applied — how many undo steps revert everything. */
+  undoSteps: number;
 }
 
 /**
@@ -58,13 +59,7 @@ interface DiffSegment {
 
 @Component({
   selector: 'nit-fix-dialog',
-  imports: [
-    MatButtonModule,
-    MatDialogModule,
-    MatIconModule,
-    MatProgressBarModule,
-    MatProgressSpinnerModule,
-  ],
+  imports: [MatButtonModule, MatDialogModule, MatProgressBarModule, MatProgressSpinnerModule],
   templateUrl: './fix-dialog.html',
   styleUrl: './fix-dialog.scss',
 })
@@ -74,11 +69,13 @@ export class FixDialog {
   private readonly api = inject(LintApi);
 
   protected readonly total = this.data.groups.reduce((n, g) => n + g.findings.length, 0);
+  protected readonly groupCount = this.data.groups.length;
   protected readonly approved = signal(0);
-  protected readonly model = signal('');
 
   private readonly index = signal(0);
+  protected readonly paragraph = computed(() => Math.min(this.index() + 1, this.groupCount));
   private processed = 0;
+  private undoSteps = 0;
 
   protected readonly step = signal<Step | null>(null);
   protected readonly suggestion = signal<string | null>(null);
@@ -102,10 +99,6 @@ export class FixDialog {
   protected readonly suggestedDiff = computed(() => this.diff()?.suggested ?? []);
 
   constructor() {
-    void this.api
-      .config()
-      .then((c) => this.model.set(c.model))
-      .catch(() => undefined);
     this.loadStep();
   }
 
@@ -118,7 +111,7 @@ export class FixDialog {
     void this.requestRewrite();
   }
 
-  protected approve(): void {
+  protected accept(): void {
     const rewrite = this.suggestion();
     const live = this.liveFindings();
     if (!rewrite || !live.length) return;
@@ -155,6 +148,7 @@ export class FixDialog {
     this.data.onResolved(live.map((f) => f.id));
     this.approved.update((n) => n + live.length);
     this.processed += live.length;
+    this.undoSteps += 1;
     this.advance();
   }
 
@@ -183,7 +177,7 @@ export class FixDialog {
 
   private loadStep(): void {
     if (this.index() >= this.data.groups.length) {
-      this.ref.close({ approved: this.approved() });
+      this.ref.close({ approved: this.approved(), undoSteps: this.undoSteps });
       return;
     }
     const live = this.liveFindings();

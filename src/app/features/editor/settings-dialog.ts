@@ -4,6 +4,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { STYLE_RULES, type StyleRule } from '../../../shared/style-rules';
 import { STYLE_PACKAGES } from '../../../shared/styles';
@@ -23,6 +24,7 @@ export interface SettingsDialogData {
     MatDialogModule,
     MatIconModule,
     MatSlideToggleModule,
+    MatTooltipModule,
   ],
   templateUrl: './settings-dialog.html',
   styleUrl: './settings-dialog.scss',

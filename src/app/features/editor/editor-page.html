@@ -55,12 +55,12 @@
 <footer class="statusbar">
   <span>{{ words() }} words</span>
   @if (readability(); as r) {
-    <span class="sep" aria-hidden="true"></span>
+    <span class="sep optional" aria-hidden="true"></span>
     <span class="optional">{{ r.sentences }} sentences</span>
+    <span class="sep" aria-hidden="true"></span>
+    <span>{{ r.ease.verdict }}</span>
     <span class="sep optional" aria-hidden="true"></span>
-    <span>Reading ease {{ r.ease.value }} · {{ r.ease.verdict }}</span>
-    <span class="sep optional" aria-hidden="true"></span>
-    <span class="optional">{{ r.grades[0].label }} grade {{ r.grades[0].value }}</span>
+    <span class="optional">Grade {{ r.grades[0].value }}</span>
   }
   <span class="spacer"></span>
   <button type="button" class="all-scores" (click)="openSettings()">All scores</button>
