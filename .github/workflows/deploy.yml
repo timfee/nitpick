@@ -1,0 +1,64 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# One deploy at a time; later pushes wait rather than cancel, so the newest
+# commit always deploys last.
+concurrency:
+  group: deploy
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check configuration
+        if: vars.GCP_WORKLOAD_IDENTITY_PROVIDER == '' || vars.GCP_DEPLOY_SERVICE_ACCOUNT == ''
+        run: |
+          echo "::error::Repository variables GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_DEPLOY_SERVICE_ACCOUNT are not set — run scripts/setup-deploy.sh once (see README)."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Read resource set
+        id: env
+        run: |
+          read_env() {
+            node --input-type=module -e "
+              const { environment } = await import('./src/environments/environment.ts');
+              console.log(environment['$1'] ?? '');
+            "
+          }
+          {
+            echo "service=$(read_env service)"
+            echo "project=$(read_env project)"
+            echo "region=$(read_env region)"
+            echo "client_id=$(read_env googleClientId)"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy "${{ steps.env.outputs.service }}" \
+            --source . \
+            --project "${{ steps.env.outputs.project }}" \
+            --region "${{ steps.env.outputs.region }}" \
+            --allow-unauthenticated \
+            --set-env-vars "GOOGLE_CLOUD_PROJECT=${{ steps.env.outputs.project }},GOOGLE_CLIENT_ID=${{ steps.env.outputs.client_id }}" \
+            --quiet
