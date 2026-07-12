@@ -18,6 +18,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from '@tiptap/core';
+import { TaskItem, TaskList } from '@tiptap/extension-list';
 import type { EditorState } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { TiptapEditorDirective } from 'ngx-tiptap';
@@ -141,6 +142,8 @@ export class EditorPage {
           // Clicking a link while editing should place the cursor, not navigate.
           link: { openOnClick: false, defaultProtocol: 'https' },
         }),
+        TaskList,
+        TaskItem.configure({ nested: true }),
         LintHighlight.configure({ onSelect: (id) => this.selectedId.set(id) }),
       ],
       content: SAMPLE,
