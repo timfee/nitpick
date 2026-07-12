@@ -1,3 +1,10 @@
 :host {
   display: contents;
 }
+// On dark surfaces outline-variant drops to near-zero contrast and the
+// local/Drive group split disappears; outline keeps the divider legible.
+@media (prefers-color-scheme: dark) {
+  mat-divider {
+    --mat-divider-color: var(--mat-sys-outline);
+  }
+}
