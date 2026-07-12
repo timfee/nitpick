@@ -17,6 +17,6 @@ export const environment = {
    * Console, safe to ship. Leave blank to hide the Drive menu items.
    */
   googleApiKey: '',
-  geminiModel: 'gemini-3.1-flash',
+  geminiModel: 'gemini-2.5-flash',
   vertexLocation: 'global',
 };

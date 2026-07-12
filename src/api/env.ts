@@ -14,7 +14,7 @@ export const env = {
   /** Public, referrer-restricted browser key for the Google Picker. Optional. */
   apiKey: first(process.env['GOOGLE_API_KEY'], environment.googleApiKey) ?? '',
   /** Vertex AI (Agent Platform) model to lint with. */
-  model: first(process.env['GEMINI_MODEL'], environment.geminiModel) ?? 'gemini-3.1-flash',
+  model: first(process.env['GEMINI_MODEL'], environment.geminiModel) ?? 'gemini-2.5-flash',
   /** Vertex AI location; `global` routes to the nearest capacity. */
   location: first(process.env['VERTEX_LOCATION'], environment.vertexLocation) ?? 'global',
   /** Falls back to ADC metadata when unset everywhere. */
