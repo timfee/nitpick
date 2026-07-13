@@ -5,9 +5,9 @@ import { z } from 'zod';
 import { env } from './env';
 
 /**
- * Client is created lazily so credentials/project resolve via ADC at first
- * request: the metadata server on Cloud Run, `gcloud auth application-default
- * login` locally. No API keys anywhere.
+ * The client initializes lazily so credentials and project resolve via ADC
+ * at the first request: the metadata server on Cloud Run, `gcloud auth
+ * application-default login` locally. API keys never enter the picture.
  */
 let client: Promise<GoogleGenAI> | undefined;
 
@@ -19,7 +19,8 @@ export const getGenAi = (): Promise<GoogleGenAI> =>
 
 /**
  * Gemini accepts standard JSON Schema, so the Zod contracts double as
- * structured-output schemas. `$schema` is stripped since Gemini rejects it.
+ * structured-output schemas. The helper strips `$schema` since Gemini
+ * rejects it.
  */
 export const toResponseJsonSchema = (schema: z.ZodType): Record<string, unknown> => {
   const json: Record<string, unknown> = z.toJSONSchema(schema);

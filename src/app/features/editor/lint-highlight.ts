@@ -65,8 +65,8 @@ declare module '@tiptap/core' {
 }
 
 /**
- * Inline decorations for lint findings. Decorations live in plugin state and
- * are remapped through every transaction, so highlights stay glued to their
+ * Inline decorations for lint findings. Decorations live in plugin state
+ * and remap through every transaction, so highlights stay glued to their
  * text while the user keeps typing.
  */
 export const LintHighlight = Extension.create<LintHighlightOptions>({

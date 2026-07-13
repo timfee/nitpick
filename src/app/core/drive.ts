@@ -4,7 +4,7 @@ import { environment } from '../../environments/environment';
 import { loadGis } from './gis';
 import { LintApi } from './lint-api';
 
-/** Per-file grants only — never `drive.readonly` or the broad `drive` scope. */
+/** Per-file grants only, never `drive.readonly` or the broad `drive` scope. */
 export const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
 
 /** Matches the export cap called out in the brief: refuse anything bigger. */
@@ -44,13 +44,13 @@ class UnauthorizedError extends Error {}
 
 interface CachedToken {
   value: string;
-  /** Epoch ms; refreshed a little early to avoid racing the real expiry. */
+  /** Epoch ms. The cache refreshes a little early to dodge the real expiry. */
   expiresAt: number;
 }
 
 /**
  * Runs every Drive call in the browser with a user-granted OAuth access
- * token — never the ID token used for our own API, and never anything sent
+ * token, never the ID token used for our own API, and never anything sent
  * to our server. All entry points are menu clicks, so `requestAccessToken`
  * always runs from a user gesture, which GIS requires for the consent popup.
  */
@@ -60,7 +60,7 @@ export class Drive {
 
   private tokenClient: TokenClient | undefined;
   private cached: CachedToken | undefined;
-  /** Swapped in per-request; GIS fixes the callback at `initTokenClient` time. */
+  /** Swapped in per request, since GIS fixes the callback at `initTokenClient` time. */
   private pending: ((response: TokenResponse) => void) | undefined;
 
   private readonly openDoc = signal<{ fileId: string; name: string } | null>(null);
@@ -97,7 +97,7 @@ export class Drive {
         this.pending = (response) => {
           this.pending = undefined;
           if (response.error || !response.access_token) {
-            reject(new Error(response.error_description ?? response.error ?? 'Sign-in was cancelled'));
+            reject(new Error(response.error_description ?? response.error ?? 'Sign-in did not complete'));
             return;
           }
           this.cached = {
@@ -119,15 +119,15 @@ export class Drive {
   }
 
   /**
-   * Public alias for {@link Drive.accessToken}: the Google Picker also needs
-   * a bearer token (to list the files it shows), but it lives in a separate
-   * service, so the cached getter can't stay entirely private.
+   * Public alias for {@link Drive.accessToken}. The Google Picker also needs
+   * a bearer token to list the files it shows. Because the picker lives in
+   * a separate service, the cached getter can't stay entirely private.
    */
   async requestToken(): Promise<string> {
     return this.accessToken();
   }
 
-  /** GET .../export?mimeType=text/markdown, retrying once on a stale token. */
+  /** GET …/export?mimeType=text/markdown, retrying once on a stale token. */
   async exportDocAsMarkdown(fileId: string): Promise<string> {
     return this.withAuthRetry((token) => this.doExport(fileId, token));
   }
@@ -142,7 +142,7 @@ export class Drive {
 
   /**
    * Multipart create (`fileId` absent) or update. Hand-built body with an
-   * explicit boundary — deliberately not `FormData`, which Drive's
+   * explicit boundary, deliberately avoiding `FormData`, which Drive's
    * multipart/related upload doesn't accept.
    */
   async saveMarkdownAsDoc(name: string, markdown: string, fileId?: string): Promise<string> {
@@ -197,11 +197,11 @@ export class Drive {
   }
 }
 
-/** Reads `res.body` in chunks, aborting as soon as `limit` bytes is crossed. */
+/** Reads `res.body` in chunks, aborting once the payload crosses `limit` bytes. */
 async function readCapped(res: Response, limit: number): Promise<string> {
   const reader = res.body?.getReader();
   if (!reader) {
-    // No streaming body (some test/runtime environments) — fall back.
+    // No streaming body (some test and runtime environments), so fall back.
     const text = await res.text();
     if (new Blob([text]).size > limit) throw new Error('Document is too large to import (10MB limit)');
     return text;

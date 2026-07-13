@@ -21,7 +21,7 @@ const angularApp = new AngularNodeAppEngine({
     '*.run.app',
     ...(process.env['NG_ALLOWED_HOSTS']?.split(',').map((h) => h.trim()) ?? []),
   ],
-  // Cloud Run's front end sets X-Forwarded-* and is trusted.
+  // Cloud Run's front end sets X-Forwarded-*, so the server trusts it.
   trustProxyHeaders: true,
 });
 
@@ -50,8 +50,9 @@ app.use((req, res, next) => {
 });
 
 /**
- * Start the server if this module is the main entry point, or it is ran via PM2.
- * The server listens on the port defined by the `PORT` environment variable, or defaults to 4000.
+ * Starts the server when this module is the main entry point or runs under
+ * PM2. The port comes from the `PORT` environment variable and defaults
+ * to 4000.
  */
 if (isMainModule(import.meta.url) || process.env['pm_id']) {
   const port = process.env['PORT'] ?? 4000;

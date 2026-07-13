@@ -18,7 +18,7 @@ const rateLimited = (who: string): boolean => {
   return hits.length > MAX_PER_WINDOW;
 };
 
-/** Verifies the `Authorization: Bearer <Google ID token>` header. */
+/** Verifies the bearer Google ID token in the Authorization header. */
 export const requireUser: RequestHandler = async (req, res, next) => {
   if (!env.clientId) {
     res.status(500).json({ error: 'Server is missing GOOGLE_CLIENT_ID' });
@@ -45,7 +45,7 @@ export const requireUser: RequestHandler = async (req, res, next) => {
     return;
   }
   if (rateLimited(user.email)) {
-    res.status(429).json({ error: 'Too many requests — try again in a minute' });
+    res.status(429).json({ error: 'Too many requests. Try again in a minute.' });
     return;
   }
   res.locals['user'] = user;

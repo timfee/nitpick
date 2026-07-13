@@ -41,7 +41,7 @@ export function slugify(markdown: string): string {
 /**
  * Toolbar menu for markdown import/export and (when a Picker API key is
  * configured) Google Drive open/save. Dumb by design: the editor comes in as
- * a signal input, and a successful import is reported via `imported` so the
+ * a signal input, and a successful import reports through `imported` so the
  * page can reset lint state (findings point at text that's now gone).
  */
 @Component({
@@ -72,9 +72,9 @@ export class FileMenu {
 
   private async checkDriveEnabled(): Promise<void> {
     try {
-      // The build usually bakes the key in; the API call is only a fallback
-      // for deployments configured purely through environment variables —
-      // same pattern as the OAuth client ID in sign-in-page.ts.
+      // The build bakes the key in for most deployments. The API call is a
+      // fallback for setups configured purely through environment variables,
+      // matching the OAuth client ID pattern in sign-in-page.ts.
       const apiKey = environment.googleApiKey || (await this.api.config()).apiKey;
       this.driveEnabled.set(!!apiKey);
     } catch {
@@ -144,7 +144,7 @@ export class FileMenu {
 
   private driveError(err: unknown): void {
     console.error('[drive]', err);
-    this.notify('Google Drive said no — try again.');
+    this.notify('Google Drive said no. Try again.');
   }
 
   /** Transient toast with no action button. */

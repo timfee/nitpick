@@ -7,7 +7,7 @@
 </header>
 
 @if (!findings().length) {
-  <p class="empty">No findings. Run a check to see suggestions here.</p>
+  <p class="empty">Nothing flagged yet. Run a check to see suggestions here.</p>
 } @else {
   <button matButton="tonal" class="fix-all" (click)="fixAll.emit()">
     <mat-icon>auto_fix_high</mat-icon>

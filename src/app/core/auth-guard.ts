@@ -6,7 +6,7 @@ import { Auth } from './auth';
 /**
  * The session cookie is visible on both server and browser, so these run
  * identically on both: SSR responds with the right page (or an HTTP
- * redirect) on the first byte — no client-side redirect flash.
+ * redirect) on the first byte, with zero client-side redirect flash.
  */
 export const signedInGuard: CanActivateFn = () =>
   inject(Auth).user() ? true : inject(Router).parseUrl('/signin');

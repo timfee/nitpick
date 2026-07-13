@@ -44,7 +44,7 @@ const loadApiJs = (): Promise<void> =>
     script.src = 'https://apis.google.com/js/api.js';
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Could not load the Google Picker'));
+    script.onerror = () => reject(new Error('Failed to load the Google Picker'));
     document.head.append(script);
   }));
 
@@ -70,7 +70,7 @@ export class DrivePicker {
     return environment.googleApiKey || (await this.api.config()).apiKey;
   }
 
-  /** Opens the picker scoped to Google Docs; resolves `null` if the user cancels. */
+  /** Opens the picker scoped to Google Docs. Resolves `null` when the user cancels. */
   async pickDocument(): Promise<{ id: string; name: string } | null> {
     const [apiKey, token] = await Promise.all([this.apiKey(), this.drive.requestToken()]);
     if (!apiKey) throw new Error('Google Drive picker is not configured');

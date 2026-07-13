@@ -42,7 +42,7 @@ export function buildTextIndex(doc: PmNode) {
 
 /**
  * Anchors each finding's quote to a document range. Duplicate quotes claim
- * successive occurrences; findings whose quote no longer exists are dropped.
+ * successive occurrences. Findings whose quote no longer exists drop out.
  */
 export function locateFindings(
   findings: LintFinding[],

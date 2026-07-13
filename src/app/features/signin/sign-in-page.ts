@@ -92,14 +92,14 @@ export class SignInPage {
 
   private async init(): Promise<void> {
     try {
-      // The build bakes the client ID in; the API call is only a fallback
-      // for deployments configured purely through environment variables.
+      // The build bakes the client ID in for most deployments. The API call
+      // is a fallback for setups configured purely through environment variables.
       const clientId = environment.googleClientId || (await this.api.config()).clientId;
       if (!clientId) throw new Error('missing client id');
       await this.auth.renderButton(this.gsiHost().nativeElement, clientId);
       this.ready.set(true);
     } catch {
-      this.error.set('Sign-in is unavailable — no OAuth client ID is configured.');
+      this.error.set('Sign-in is unavailable because the deployment has no OAuth client ID.');
     }
   }
 }

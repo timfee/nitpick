@@ -1,0 +1,6 @@
+# House style: sentence case everywhere, headings included.
+extends: capitalization
+message: "'%s' should be sentence case."
+level: warning
+scope: heading
+match: $sentence

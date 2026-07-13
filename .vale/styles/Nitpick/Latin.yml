@@ -1,0 +1,9 @@
+# Prefer plain English over Latin abbreviations in user-facing prose.
+extends: substitution
+message: "Prefer '%s' over '%s'."
+level: suggestion
+nonword: true
+ignorecase: true
+swap:
+  '\b(?:e\.g\.)[\s,]': such as
+  '\b(?:i\.e\.)[\s,]': that is
