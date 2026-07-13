@@ -3,7 +3,9 @@
   @if (stale()) {
     <mat-icon matTooltip="Text changed since the last check">history</mat-icon>
   }
-  <span class="count">{{ findings().length }}</span>
+  @if (findings().length) {
+    <span class="count">{{ findings().length }}</span>
+  }
 </header>
 
 @if (!findings().length) {

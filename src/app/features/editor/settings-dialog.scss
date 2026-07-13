@@ -12,6 +12,20 @@ h2[mat-dialog-title] {
     gap: 0.75rem;
   }
 }
+// The full-screen compact dialog (see editor-page.ts openSettings) passes a
+// `fullscreen` panelClass on the overlay pane, an ancestor of this host.
+:host-context(.fullscreen) {
+  .layout {
+    @media (max-width: 40rem) {
+      height: 100%;
+    }
+  }
+  // Material caps dialog content at 65vh; the full-screen variant should use
+  // all of the available height instead.
+  mat-dialog-content {
+    max-height: none;
+  }
+}
 
 mat-nav-list {
   overflow-y: auto;
@@ -44,12 +58,20 @@ mat-nav-list {
     overflow-x: auto;
     overflow-y: hidden;
     padding-block: 0;
+    gap: 0.5rem;
+    scroll-padding-inline: 1rem;
+    // Static end fade cues that the strip scrolls; the last chip peeks in
+    // from under it instead of being cut off flush with the edge.
+    padding-inline-end: 2.5rem;
+    mask-image: linear-gradient(to right, black calc(100% - 2rem), transparent);
     button {
       flex: 0 0 auto;
       width: auto;
     }
     .mdc-list-item {
       width: auto;
+      border-radius: 1rem;
+      background: var(--mat-sys-surface-container-high);
     }
     .mat-mdc-list-item-unscoped-content {
       width: auto;
@@ -79,6 +101,11 @@ header {
     h3 {
       margin: 0;
       font: var(--mat-sys-title-medium);
+      @media (max-width: 40rem) {
+        // The selected rail chip already names the package; repeating it
+        // here is redundant at this width.
+        display: none;
+      }
     }
     .summary {
       font: var(--mat-sys-body-small);
@@ -140,8 +167,9 @@ header {
   .hint-col {
     display: none;
   }
+  // A single-column checkbox list needs no "Rule" column caption.
   .cols {
-    grid-template-columns: 1fr;
+    display: none;
   }
   .rules li {
     grid-template-columns: 1fr;

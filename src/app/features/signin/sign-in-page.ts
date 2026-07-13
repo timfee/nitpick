@@ -31,7 +31,7 @@ import { LintApi } from '../../core/lint-api';
             sign-in popup.
           -->
           <div class="signin" [class.ready]="ready()">
-            <button matButton="filled" tabindex="-1" aria-hidden="true">
+            <button matButton="filled" tabindex="-1" aria-hidden="true" [disabled]="!ready()">
               <mat-icon>login</mat-icon>
               Sign in with Google
             </button>
@@ -98,8 +98,11 @@ export class SignInPage {
       if (!clientId) throw new Error('missing client id');
       await this.auth.renderButton(this.gsiHost().nativeElement, clientId);
       this.ready.set(true);
-    } catch {
-      this.error.set('Sign-in is unavailable because the deployment has no OAuth client ID.');
+    } catch (err) {
+      console.error('Google sign-in unavailable: missing OAuth client ID', err);
+      this.error.set(
+        "Sign-in isn't available right now — this deployment is missing its Google sign-in configuration.",
+      );
     }
   }
 }
