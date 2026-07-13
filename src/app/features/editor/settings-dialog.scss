@@ -141,5 +141,12 @@ header {
   // the hint line and let Material own alignment and row targets.
   [matlistitemline] {
     color: var(--mat-sys-on-surface-variant);
+    // Nothing hides behind an ellipsis: hints wrap and the row grows.
+    white-space: normal;
+  }
+  mat-list-option {
+    height: auto;
+    min-block-size: 3.5rem;
+    padding-block: 0.25rem;
   }
 }
