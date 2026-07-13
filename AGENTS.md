@@ -11,6 +11,9 @@
 - Typography is Google Sans Flex. Weight 375 is the base, 450 marks emphasis, and 550
   appears only in rare moments of stress. Sentence case everywhere. Avoid all-caps
   text, emojis, and marketing filler.
+- Fonts load from Google Fonts, and the Material Symbols link in `src/index.html` is
+  subset via `icon_names`. After adding or removing a `mat-icon`, run
+  `node scripts/sync-icons.mjs` to refresh the list.
 - The lint contract is the Zod schema in `src/shared/lint.ts`. The server validates with
   it, Gemini's structured output derives from it, the client imports only its types.
   Keep numeric length constraints out of the Gemini-facing schema (Vertex rejects them)

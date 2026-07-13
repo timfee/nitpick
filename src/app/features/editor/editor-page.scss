@@ -20,6 +20,9 @@ mat-toolbar {
   .check {
     white-space: nowrap;
     flex-shrink: 0;
+    // Progress only shows while disabled, so tint the spinner for the
+    // disabled container rather than the default on-primary.
+    --mat-button-filled-progress-active-indicator-color: var(--mat-sys-primary);
   }
 }
 .body {

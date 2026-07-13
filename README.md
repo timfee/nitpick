@@ -29,6 +29,22 @@ Init prints instructions. Add the service URL and `http://localhost:4200` as
 authorized JavaScript origins, then put the ID in
 `src/environments/environment*.ts`.
 
+### Google Drive
+
+The file menu can open a Google Doc as markdown and save the document back
+to Drive as a Doc. It is optional and stays hidden until `googleApiKey`
+exists in `src/environments/environment*.ts` (or `GOOGLE_API_KEY` is set).
+Everything runs in the browser with the signed-in user's own short-lived
+token, scoped to `drive.file` — the non-sensitive, per-file-grant scope, so
+no Google verification review is needed and the app only ever sees files
+the user picks or creates through it.
+
+`scripts/init.sh` enables the Drive API and creates the key (public and
+restricted to this app's HTTP referrers — not a secret). One console step
+remains because Google has no API for it: add the
+`https://www.googleapis.com/auth/drive.file` scope under Google Auth
+Platform → Data access. init prints the exact steps.
+
 ## Continuous deployment
 
 Merges to `main` deploy to Cloud Run through `.github/workflows/deploy.yml`,
@@ -53,6 +69,7 @@ Environment variables override the environment-file defaults.
 | Variable               | Default             | Purpose                                              |
 | ---------------------- | ------------------- | ---------------------------------------------------- |
 | `GOOGLE_CLIENT_ID`     | from environment.ts | OAuth web client ID for Sign in with Google          |
+| `GOOGLE_API_KEY`       | from environment.ts | Referrer-restricted key that turns on the Drive menu |
 | `GOOGLE_CLOUD_PROJECT` | from environment.ts | Project used for Vertex AI                           |
 | `GEMINI_MODEL`         | `gemini-3-flash-preview` | Vertex AI model                                 |
 | `VERTEX_LOCATION`      | `global`            | Vertex AI location                                   |

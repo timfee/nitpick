@@ -13,9 +13,12 @@
 #   - the required API enablements
 #   - the Cloud Run service for the chosen resource set, deployed from source
 #   - the roles/aiplatform.user grant for the service account
+#   - a referrer-restricted API key for Google Drive/Picker, when
+#     googleApiKey is empty (written back into both environment files)
 #
-# The one thing it cannot create is the OAuth web client (Google offers no
-# API for that) — it prints exact instructions at the end.
+# Two things it cannot create: the OAuth web client, and the drive.file
+# scope on the consent screen's data access (Google offers no API for
+# either) — it prints exact instructions for both at the end.
 #
 # Requires: gcloud (authenticated via `gcloud auth login`), node >= 24.
 
@@ -46,6 +49,7 @@ SERVICE=$(read_env service)
 PROJECT=$(read_env project)
 REGION=$(read_env region)
 CLIENT_ID=$(read_env googleClientId)
+API_KEY=$(read_env googleApiKey)
 
 step "resource set: $ENV_NAME (service=$SERVICE region=$REGION)"
 
@@ -66,10 +70,11 @@ else
 fi
 gcloud config set project "$PROJECT" -q
 
-step "enabling APIs (aiplatform, run, cloudbuild, artifactregistry)"
+step "enabling APIs (aiplatform, run, cloudbuild, artifactregistry, drive)"
 gcloud services enable \
   aiplatform.googleapis.com run.googleapis.com \
   cloudbuild.googleapis.com artifactregistry.googleapis.com \
+  drive.googleapis.com \
   --project "$PROJECT"
 
 # Source deploys build with the compute default service account, which has
@@ -103,6 +108,26 @@ gcloud projects add-iam-policy-binding "$PROJECT" \
 URL=$(gcloud run services describe "$SERVICE" --project "$PROJECT" --region "$REGION" \
   --format='value(status.url)')
 
+if [[ -z "$API_KEY" ]]; then
+  step "creating a referrer-restricted API key for Drive/Picker"
+  if gcloud services enable apikeys.googleapis.com --project "$PROJECT" -q \
+    && KEY_NAME=$(gcloud services api-keys create \
+      --project "$PROJECT" \
+      --display-name="Nitpick Drive picker" \
+      --allowed-referrers="$URL/*,http://localhost:4200/*" \
+      --api-target=service=drive.googleapis.com \
+      --format='value(name)') \
+    && [[ -n "$KEY_NAME" ]]; then
+    API_KEY=$(gcloud services api-keys get-key-string "$KEY_NAME" --format='value(keyString)')
+    step "writing API key into src/environments/"
+    sed -i.bak "s/googleApiKey: '[^']*'/googleApiKey: '$API_KEY'/" \
+      src/environments/environment.ts src/environments/environment.development.ts
+    rm -f src/environments/*.bak
+  else
+    echo "  could not create the key automatically — see the manual step below"
+  fi
+fi
+
 echo
 echo "done — service running at $URL"
 if [[ -z "$CLIENT_ID" ]]; then
@@ -113,4 +138,16 @@ if [[ -z "$CLIENT_ID" ]]; then
   echo "  3. Authorized JavaScript origins: $URL and http://localhost:4200"
   echo "  4. Paste the client ID into googleClientId in src/environments/environment*.ts"
   echo "  5. Re-deploy: scripts/init.sh --env $ENV_NAME (or scripts/doctor.sh to verify first)"
+fi
+if [[ -z "$API_KEY" ]]; then
+  echo
+  echo "Drive integration is off until an API key exists and the consent screen"
+  echo "lists its scope (the scope has no API — this part is always manual):"
+  echo "  1. https://console.cloud.google.com/apis/credentials?project=$PROJECT"
+  echo "  2. Create credentials → API key"
+  echo "  3. Restrict application to HTTP referrers: $URL/* and http://localhost:4200/*"
+  echo "  4. Restrict API to the Google Drive API, if offered (for the Picker)"
+  echo "  5. Google Auth Platform → Data access → add scope https://www.googleapis.com/auth/drive.file"
+  echo "  6. Paste the key into googleApiKey in src/environments/environment*.ts"
+  echo "     (or set the GOOGLE_API_KEY env var)"
 fi

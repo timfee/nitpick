@@ -1,5 +1,6 @@
-<button matIconButton matTooltip="File" aria-label="File" [matMenuTriggerFor]="menu">
-  <mat-icon>draft</mat-icon>
+<button matButton class="trigger" [matMenuTriggerFor]="menu">
+  File
+  <mat-icon iconPositionEnd>arrow_drop_down</mat-icon>
 </button>
 <mat-menu #menu>
   <button mat-menu-item (click)="triggerImport()">

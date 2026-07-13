@@ -7,11 +7,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="An editor that checks prose with Gemini." />
     <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    <!-- Self-hosted via scripts/vendor-fonts.mjs so text and icons never
-         depend on fonts.googleapis.com at runtime. The woff2 files are
-         content-hashed; fonts.css is served no-cache so regenerated subsets
-         reach browsers immediately (?v busts caches poisoned before that). -->
-    <link rel="stylesheet" href="fonts/fonts.css?v=2" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Google+Sans+Flex:opsz,wght@6..144,1..1000&display=swap"
+      rel="stylesheet"
+    />
+    <!-- icon_names keeps the download ~27KB instead of ~4MB; the list ships
+         with the app, so it can't go stale. After adding an icon, run:
+         node scripts/sync-icons.mjs -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=account_circle,add_to_drive,arrow_drop_down,auto_fix_high,checklist,close,cloud_upload,code,code_blocks,download,expand_less,expand_more,format_bold,format_h1,format_h2,format_h3,format_italic,format_list_bulleted,format_list_numbered,format_quote,history,horizontal_rule,link,login,logout,rate_review,redo,spellcheck,strikethrough_s,tune,undo,upload_file&display=block"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <app-root></app-root>

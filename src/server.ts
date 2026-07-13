@@ -36,12 +36,6 @@ app.use(
     maxAge: '1y',
     index: false,
     redirect: false,
-    setHeaders: (res, path) => {
-      // fonts.css keeps a stable name but its content changes whenever the
-      // icon subset regenerates, so it must revalidate rather than sit in caches
-      // for a year. The woff2 files it points at are content-hashed.
-      if (path.endsWith('fonts.css')) res.setHeader('Cache-Control', 'no-cache');
-    },
   }),
 );
 
