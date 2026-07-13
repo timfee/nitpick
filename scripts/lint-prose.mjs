@@ -1,25 +1,28 @@
 #!/usr/bin/env node
 /**
- * Self-healing prose linting with Vale across the three places prose lives:
+ * Self-healing prose linting with Vale across the places prose lives:
  *
- *   1. Markdown docs — linted directly.
- *   2. Code comments in .ts/.mjs — Vale lints only comments in code formats.
- *      (.mjs is copied as .js: Vale's `[formats]` remapping silently lints
- *      nothing for code formats, so the extension has to be real.)
- *   3. Microcopy in Angular templates, external and inline — Vale's HTML
- *      parser can't handle @if/@for control flow, so templates are masked
- *      down to their user-visible text (text nodes plus a11y/tooltip
- *      attributes) with every masked character replaced by a space, keeping
- *      line and column numbers exact.
+ *   1. Markdown docs, linted directly.
+ *   2. Code comments in .ts and .mjs files, where Vale lints only the
+ *      comments. Each .mjs file gets copied as .js because Vale's
+ *      `[formats]` remapping silently lints nothing for code formats, so
+ *      the extension has to be real.
+ *   3. Microcopy in Angular templates (external and inline) and in
+ *      user-facing string literals. Vale's HTML parser can't handle
+ *      @if/@for control flow, so the script masks templates down to their
+ *      user-visible text (text nodes plus a11y and tooltip attributes),
+ *      replacing every masked character with a space to keep line and
+ *      column numbers exact.
  *
- * Masked copies go to a temp mirror as `<path>.txt` / `<path>.js`; findings
- * are mapped back to the real files. Because masking preserves positions,
- * fixes apply directly to the real sources.
+ * Masked copies go to a temp mirror as `<path>.txt` or `<path>.js`, and
+ * findings map back to the real files. Because masking preserves
+ * positions, fixes apply directly to the real sources.
  *
- * By default the script heals what it safely can — Latin abbreviations,
- * sentence spacing, exclamation points, emojis, repeated words — re-linting
- * until nothing fixable remains, then reports what needs human judgment
- * (spelling, filler, heading case). Pass --check to only report.
+ * By default the script heals what it safely can (Latin abbreviations,
+ * sentence spacing, exclamation points, emojis, repeated words, wordy
+ * phrases) and re-lints until nothing fixable remains. It then reports
+ * what needs human judgment. The check-only mode just reports, through
+ * `npm run lint:prose:check`.
  */
 import { execFileSync, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -28,6 +31,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { parseTemplate } from '@angular/compiler';
+import ts from 'typescript';
 
 const checkOnly = process.argv.includes('--check');
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -58,20 +62,23 @@ const tracked = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: '
   .filter(Boolean)
   // The vendored agent skills are third-party text, not this repo's prose.
   .filter((f) => !f.startsWith('.agents/'))
-  // GEMINI.md is a symlink to AGENTS.md; linting both double-reports.
+  // GEMINI.md is a symlink to AGENTS.md. Linting both would double-report.
   .filter((f) => f !== 'GEMINI.md');
 
 const markdown = tracked.filter((f) => f.endsWith('.md'));
 const typescript = tracked.filter((f) => f.endsWith('.ts'));
 const scripts = tracked.filter((f) => f.endsWith('.mjs'));
-const templates = tracked.filter((f) => f.endsWith('.html') && f.startsWith('src/app/'));
+const templates = tracked.filter((f) => f.endsWith('.html') && f.startsWith('src/'));
+// Generated from upstream Vale style metadata. Fixes belong upstream.
+const generated = new Set(['src/shared/style-rules.ts']);
 
 /** Replaces every character with a space, preserving newlines and length. */
 const blank = (text) => text.replace(/[^\n]/g, ' ');
 
 /**
  * Returns `source` with everything except human-visible template text
- * blanked out. `nodes` are template AST nodes; spans index into `source`.
+ * blanked out. `nodes` are template AST nodes whose spans index into
+ * `source`.
  */
 const maskTemplate = (source, nodes) => {
   const out = Array.from(blank(source));
@@ -104,6 +111,43 @@ const maskTemplate = (source, nodes) => {
     .replace(/&[a-z]+;/g, blank);
 };
 
+/**
+ * String literals holding user-facing copy, meaning at least three words
+ * of real text that isn't markup. This pass covers copy that lives in
+ * code, like toasts and error messages.
+ */
+const proseLiterals = (file, source) => {
+  const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true);
+  const spans = [];
+  const visit = (node) => {
+    if (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+      // Component styles and templates are code, not copy.
+      const owner = node.parent?.parent ?? node.parent;
+      const property =
+        (ts.isPropertyAssignment(owner) && owner.name.getText(sourceFile)) ||
+        (ts.isPropertyAssignment(node.parent) && node.parent.name.getText(sourceFile));
+      const text = node.text;
+      // Prose means three or more plain words. Protocol strings such as
+      // Content-Type header values never qualify.
+      const words = text.trim().split(/\s+/);
+      const wordy = words.filter((w) => /^[A-Za-z][a-z']*[.,!?:]?$/.test(w)).length >= 3;
+      if (
+        wordy &&
+        !text.trim().startsWith('<') &&
+        property !== 'styles' &&
+        property !== 'template'
+      ) {
+        // `end` sits on the closing quote. The emit step turns it into a
+        // period so neighboring literals never merge into one "sentence".
+        spans.push({ start: node.getStart(sourceFile) + 1, end: node.getEnd() - 1 });
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sourceFile);
+  return spans;
+};
+
 /** Extracts `template:`-backtick literals from a component source file. */
 const inlineTemplates = (source) => {
   const found = [];
@@ -130,7 +174,7 @@ const run = (args, cwd) => {
   );
   if (error) throw error;
   // Vale exits 1 for findings (with JSON on stdout) but 2 for its own
-  // errors — don't let a broken config read as a clean run.
+  // errors, so a broken config must not read as a clean run.
   if (!stdout.trim()) {
     if (status) throw new Error(stderr.trim() || `vale exited with ${status}`);
     return {};
@@ -138,7 +182,7 @@ const run = (args, cwd) => {
   return JSON.parse(stdout);
 };
 
-/** One full lint pass; returns Map of real file path → Vale alerts. */
+/** One full lint pass. Returns a Map of real file path to Vale alerts. */
 const lintOnce = () => {
   const work = mkdtempSync(path.join(tmpdir(), 'nitpick-prose-'));
   const masked = [];
@@ -169,6 +213,20 @@ const lintOnce = () => {
       const mask = blank(source.slice(0, start)) + maskTemplate(text, nodes);
       emit(file, '.txt', mask + blank(source.slice(start + text.length)));
     }
+    if (generated.has(file)) continue;
+    const literals = proseLiterals(file, source);
+    if (literals.length) {
+      const out = Array.from(blank(source));
+      for (const { start, end } of literals) {
+        for (let i = start; i < end; i += 1) out[i] = source[i];
+        // Concatenated fragments (`'a ' + 'b'`) continue the same sentence,
+        // and only literals that truly end get the period terminator.
+        let next = end + 1;
+        while (next < source.length && /\s/.test(source[next])) next += 1;
+        if (source[next] !== '+') out[end] = '.';
+      }
+      emit(file, '.strings.txt', out.join(''));
+    }
   }
 
   for (const file of scripts) {
@@ -186,7 +244,7 @@ const lintOnce = () => {
   try {
     record(run([...markdown, ...typescript], root), (f) => f);
     if (masked.length) {
-      record(run(masked, work), (f) => f.replace(/\.(txt|js)$/, ''));
+      record(run(masked, work), (f) => f.replace(/\.(strings\.txt|txt|js)$/, ''));
     }
   } finally {
     rmSync(work, { recursive: true, force: true });
@@ -197,12 +255,12 @@ const lintOnce = () => {
 /**
  * Mechanical fixes, keyed by check. Each takes the flagged text and returns
  * the healed replacement. Checks that need judgment (spelling, filler,
- * heading case) have no entry and are reported instead.
+ * heading case) have no entry and go into the report instead.
  */
 const fixers = {
   'Nitpick.Latin': (text) =>
     text
-      .replace(/e\.g\./i, (m) => (m.startsWith('E') ? 'For example' : 'for example'))
+      .replace(/e\.g\./i, (m) => (m.startsWith('E') ? 'Such as' : 'such as'))
       .replace(/i\.e\./i, (m) => (m.startsWith('I') ? 'That is' : 'that is')),
   'Nitpick.Spacing': (text) => text.replace(/ {2,}/g, ' '),
   'Nitpick.Exclamation': (text) => text.replace('!', '.'),
@@ -210,7 +268,25 @@ const fixers = {
   'Vale.Repetition': (text) => text.split(/\s+/)[0],
 };
 
-/** Applies fixable alerts to a file; returns how many were applied. */
+/**
+ * Returns the healed replacement for an alert, or null when the finding
+ * needs human judgment. Substitution rules carry their replacement in the
+ * alert's action, and hand-written fixers cover the rest.
+ */
+const healFor = (alert, text) => {
+  const fixer = fixers[alert.Check];
+  if (fixer) return fixer(text);
+  if (alert.Action?.Name === 'replace' && alert.Action.Params?.length === 1) {
+    const swap = alert.Action.Params[0];
+    return /^[A-Z]/.test(text) ? swap.charAt(0).toUpperCase() + swap.slice(1) : swap;
+  }
+  return null;
+};
+const fixable = (alert) =>
+  Boolean(fixers[alert.Check]) ||
+  (alert.Action?.Name === 'replace' && alert.Action.Params?.length === 1);
+
+/** Applies fixable alerts to a file. Returns the number applied. */
 const heal = (file, alerts) => {
   const target = path.join(root, file);
   let source = readFileSync(target, 'utf8');
@@ -222,14 +298,17 @@ const heal = (file, alerts) => {
     .map((a) => ({
       start: lineStarts[a.Line - 1] + a.Span[0] - 1,
       end: lineStarts[a.Line - 1] + a.Span[1],
-      check: a.Check,
+      alert: a,
     }))
     .sort((a, b) => b.start - a.start);
   let applied = 0;
-  for (const { start, end, check } of edits) {
+  for (let { start, end, alert } of edits) {
     const text = source.slice(start, end);
-    const healed = fixers[check](text);
-    if (healed === text) continue;
+    const healed = healFor(alert, text);
+    if (healed === null || healed === text) continue;
+    // A removal must take one neighboring space with it.
+    if (healed === '' && source[end] === ' ') end += 1;
+    else if (healed === '' && source[start - 1] === ' ') start -= 1;
     source = source.slice(0, start) + healed + source.slice(end);
     applied += 1;
   }
@@ -244,8 +323,8 @@ if (!checkOnly) {
   for (let pass = 1; pass <= MAX_PASSES; pass += 1) {
     let healedCount = 0;
     for (const [file, alerts] of results) {
-      const fixable = alerts.filter((a) => fixers[a.Check]);
-      if (fixable.length) healedCount += heal(file, fixable);
+      const healable = alerts.filter(fixable);
+      if (healable.length) healedCount += heal(file, healable);
     }
     if (!healedCount) break;
     console.log(`Pass ${pass}: healed ${healedCount} finding${healedCount === 1 ? '' : 's'}.`);

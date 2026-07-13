@@ -5,5 +5,5 @@ level: suggestion
 nonword: true
 ignorecase: true
 swap:
-  '\b(?:e\.g\.)[\s,]': for example
+  '\b(?:e\.g\.)[\s,]': such as
   '\b(?:i\.e\.)[\s,]': that is

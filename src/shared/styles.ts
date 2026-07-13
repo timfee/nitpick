@@ -1,6 +1,6 @@
 /**
  * Curated style packages from the Vale package library
- * (https://github.com/vale-cli/packages — library.json).
+ * (library.json in https://github.com/vale-cli/packages).
  *
  * Nitpicker doesn't run the Vale CLI; instead the selected packages steer
  * Gemini's lint pass. `label`/`summary` feed the settings UI, `prompt` is the
@@ -28,16 +28,17 @@ export const STYLE_PACKAGES: readonly StylePackage[] = [
     label: 'Google',
     summary: 'The Google developer documentation style guide.',
     prompt:
-      'Follow the Google developer documentation style guide: second person, present ' +
-      'tense, active voice, sentence case, no marketing filler.',
+      'Follow the Google developer documentation style guide: write in second person ' +
+      'and present tense, use active voice, and keep headings sentence case. Cut ' +
+      'marketing filler.',
   },
   {
     id: 'microsoft',
     label: 'Microsoft',
     summary: 'The Microsoft writing style guide.',
     prompt:
-      'Follow the Microsoft writing style guide: warm and crisp, contractions welcome, ' +
-      'bias-free wording, no needless formality.',
+      'Follow the Microsoft writing style guide: warm, crisp, and bias-free, with ' +
+      'contractions welcome and formality kept low.',
   },
   {
     id: 'redhat',
@@ -45,15 +46,15 @@ export const STYLE_PACKAGES: readonly StylePackage[] = [
     summary: 'The Red Hat supplementary style guide for technical docs.',
     prompt:
       'Follow the Red Hat supplementary style guide for technical documentation: ' +
-      'precise terminology, consistent product naming, no anthropomorphism.',
+      'precise terminology and consistent product naming, without anthropomorphism.',
   },
   {
     id: 'write-good',
     label: 'write-good',
     summary: 'Naive linter for English prose.',
     prompt:
-      'Apply write-good checks: passive voice, weasel words, wordy phrases, ' +
-      'unnecessary adverbs, repeated words, clunky "there is/are" openers.',
+      'Apply write-good checks: passive voice and weasel words, wordy phrasing and ' +
+      'unnecessary adverbs, repeated words, and clunky "there is/are" openers.',
   },
   {
     id: 'alex',
@@ -93,8 +94,8 @@ export const STYLE_PACKAGES: readonly StylePackage[] = [
     label: 'Openly',
     summary: 'Inclusive, open language checks.',
     prompt:
-      'Flag non-inclusive language — ableism, ageism, gendered terms, violent metaphors, ' +
-      'anthropomorphism — and suggest open, welcoming alternatives.',
+      'Flag non-inclusive language (ableism, ageism, gendered terms, violent metaphors, ' +
+      'anthropomorphism) and suggest open, welcoming alternatives.',
   },
 ] as const;
 

@@ -15,7 +15,7 @@ import { diffWords } from './word-diff';
 export interface FixDialogData {
   editor: Editor;
   groups: FixGroup[];
-  /** Called as findings are approved so the panel behind stays in sync. */
+  /** Called as the user approves findings so the panel behind stays in sync. */
   onResolved: (ids: string[]) => void;
 }
 
@@ -56,7 +56,7 @@ export class FixDialog {
   protected readonly error = signal<string | null>(null);
 
   protected readonly progress = computed(() => {
-    // Depend on the step so the bar advances as groups are processed.
+    // Depend on the step so the bar advances as each group completes.
     this.step();
     return this.total ? (this.processed / this.total) * 100 : 0;
   });
@@ -101,8 +101,9 @@ export class FixDialog {
           .run();
       }
     } else {
-      // Apply exactly what the preview was built from: the same right-to-left,
-      // overlap-free plan, so accepted text always matches the suggested pane.
+      // Apply exactly the plan that produced the preview: the same
+      // right-to-left, overlap-free replacements, so accepted text always
+      // matches the suggested pane.
       const plan = this.replacementPlan(live);
       editor
         .chain()
@@ -169,7 +170,7 @@ export class FixDialog {
       this.suggestion.set(this.composeFromSuggestions(original, plan, bounds.from));
       this.source.set('rules');
     } else {
-      // At least one issue has no drop-in replacement — ask the model.
+      // At least one issue has no drop-in replacement, so ask the model.
       void this.requestRewrite();
     }
   }
@@ -235,7 +236,7 @@ export class FixDialog {
       this.source.set('ai');
     } catch {
       this.suggestion.set(null);
-      this.error.set('The rewrite failed — retry, or skip this paragraph.');
+      this.error.set('The rewrite failed. Retry, or skip this paragraph.');
     } finally {
       this.loading.set(false);
     }

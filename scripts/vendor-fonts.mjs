@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Vendors the web fonts into public/fonts so nothing at runtime depends on
- * fonts.googleapis.com — icons and text render even when Google Fonts is
+ * fonts.googleapis.com. Icons and text render even when Google Fonts is
  * slow, blocked, or offline.
  *
  * Downloads each font's css2 stylesheet, mirrors every woff2 locally, and
@@ -15,14 +15,14 @@ import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-// A modern browser UA is required or Google serves legacy TTF CSS.
+// Google serves legacy TTF CSS unless the UA looks like a modern browser.
 const UA =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36';
 
 /**
  * Icons referenced in the app, from `<mat-icon>name</mat-icon>` in templates
  * and `icon: 'name'` in component code. The symbols font is subset to just
- * these, so re-run this script whenever an icon is added.
+ * these, so re-run this script whenever you add an icon.
  */
 function usedIcons() {
   const src = execSync(

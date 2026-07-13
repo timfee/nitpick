@@ -5,8 +5,8 @@ import { STYLE_RULES } from '../../shared/style-rules';
 import { DEFAULT_STYLE_IDS, STYLE_PACKAGES } from '../../shared/styles';
 
 /**
- * One model, one control: a package is active exactly when it has enabled
- * rules. Keyed by package id; the value is the enabled rule ids.
+ * A package is active exactly when it has enabled rules, so one model
+ * drives one control. Keyed by package id, holding the enabled rule ids.
  */
 interface StylePrefs {
   enabled: Record<string, string[]>;
@@ -26,7 +26,7 @@ const defaults = (): StylePrefs => ({
 });
 
 function load(): StylePrefs {
-  // localStorage is absent during SSR; the client re-creates the service.
+  // localStorage is absent during SSR. The client re-creates the service.
   if (typeof localStorage === 'undefined') return defaults();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);

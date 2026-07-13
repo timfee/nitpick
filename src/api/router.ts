@@ -39,6 +39,6 @@ const onError: ErrorRequestHandler = (err, _req, res, next) => {
     return;
   }
   console.error('[api]', err);
-  res.status(502).json({ error: 'Lint request failed — check server logs' });
+  res.status(502).json({ error: 'Lint request failed. Check the server logs.' });
 };
 apiRouter.use(onError);

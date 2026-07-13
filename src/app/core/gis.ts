@@ -1,7 +1,7 @@
 /**
  * Loads the Google Identity Services script exactly once. Both sign-in
  * (`google.accounts.id`) and Drive's OAuth token client
- * (`google.accounts.oauth2`) ship in the same `gsi/client` bundle, so
+ * (`google.accounts.oauth2`) arrive in the same `gsi/client` bundle, so
  * `Auth` and `Drive` share this loader rather than each racing to inject
  * their own `<script>` tag.
  */
@@ -13,6 +13,6 @@ export const loadGis = (): Promise<void> =>
     script.src = 'https://accounts.google.com/gsi/client';
     script.async = true;
     script.onload = () => resolve();
-    script.onerror = () => reject(new Error('Could not load Google Sign-In'));
+    script.onerror = () => reject(new Error('Failed to load Google Sign-In'));
     document.head.append(script);
   }));

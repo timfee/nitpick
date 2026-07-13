@@ -21,8 +21,8 @@ export function blockStart(state: EditorState, pos: number): number {
 
 /**
  * Buckets findings by the paragraph (textblock) they sit in, in document
- * order. Findings whose highlight is gone or spans blocks are left out — the
- * sidebar still lists them for manual review.
+ * order. The buckets skip findings whose highlight disappeared or spans
+ * blocks. The sidebar still lists them for manual review.
  */
 export function buildFixGroups(state: EditorState, findings: UiFinding[]): FixGroup[] {
   const byBlock = new Map<number, UiFinding[]>();

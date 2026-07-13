@@ -6,15 +6,15 @@
 
 /**
  * Acceptable-range grading shared by every metric. `limit` is the threshold
- * the upstream Vale "Readability" style package (errata-ai/Readability) warns
- * at — see each rule's `condition` in Readability/*.yml. For grade-level
+ * the upstream Vale "Readability" style package (errata-ai/Readability)
+ * warns at (see each rule's `condition` in Readability/*.yml). For grade-level
  * metrics (lower is easier) the rule fires above the limit; for the inverted
  * Flesch reading ease (higher is easier) it fires below it.
  */
 export interface ReadabilityThreshold {
   /** The Vale rule's threshold for this metric. */
   limit: number;
-  /** Short human form for tooltips, for example "aim for 8 or less". */
+  /** Short human form for tooltips, such as "aim for 8 or less". */
   range: string;
   /** ok: within the Vale limit. high: up to 3x over. severe: beyond that. */
   status: 'ok' | 'high' | 'severe';
@@ -23,7 +23,7 @@ export interface ReadabilityThreshold {
 export interface ReadabilityGrade extends ReadabilityThreshold {
   id: string;
   label: string;
-  /** Compact status-bar label, for example "FK". */
+  /** Compact status-bar label, such as "FK". */
   short: string;
   value: number;
   /** One-line tooltip explaining what the number means. */
@@ -33,7 +33,7 @@ export interface ReadabilityGrade extends ReadabilityThreshold {
 export interface ReadabilityReport {
   words: number;
   sentences: number;
-  /** Flesch reading ease, 0–100, higher is easier. */
+  /** Flesch reading ease, 0 to 100, higher is easier. */
   ease: ReadabilityThreshold & { value: number; verdict: string };
   /** Grade-level metrics, lower is easier. */
   grades: ReadabilityGrade[];
@@ -116,7 +116,7 @@ export function analyzeReadability(text: string): ReadabilityReport | null {
       short: 'LIX',
       label: 'LIX',
       value: wps + 100 * (longWords / words.length),
-      hint: 'Long-word density; 40 and up reads as difficult',
+      hint: 'Long-word density, where 40 and up reads as difficult',
       limit: 35,
       range: 'aim for 35 or less',
       status: 'ok',
@@ -148,7 +148,7 @@ function gradeStatus(value: number, limit: number): ReadabilityThreshold['status
   return 'severe';
 }
 
-/** Flesch reading ease is inverted: higher is easier, so the rule fires below `limit`. */
+/** Flesch reading ease runs inverted: higher is easier, so the rule fires below `limit`. */
 function easeStatus(value: number, limit: number): ReadabilityThreshold['status'] {
   if (value >= limit) return 'ok';
   if (value >= limit / 3) return 'high';
@@ -165,7 +165,7 @@ function verdictFor(ease: number): string {
   return 'Very hard to read';
 }
 
-/** Vowel-group heuristic with silent-e handling; close enough for scoring. */
+/** Vowel-group heuristic with silent-e handling, close enough for scoring. */
 function syllables(word: string): number {
   const w = word.toLowerCase().replace(/[^a-z]/g, '');
   if (!w) return 1;

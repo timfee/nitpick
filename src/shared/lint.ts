@@ -27,9 +27,10 @@ export const CATEGORIES = [
 export const SEVERITIES = ['suggestion', 'warning', 'error'] as const;
 
 /**
- * One Vale-library style package to lint with. `rules` narrows the package to
- * specific checks; absent means every rule in the package. Unknown package or
- * rule ids are dropped server-side against the generated catalog.
+ * One Vale-library style package to lint with. `rules` narrows the package
+ * to specific checks, and an absent list means every rule in the package.
+ * The server drops unknown package and rule ids against the generated
+ * catalog.
  */
 export const StyleSelectionSchema = z.object({
   id: z.string().max(40),
@@ -38,21 +39,22 @@ export const StyleSelectionSchema = z.object({
 
 export const LintRequestSchema = z.object({
   text: z.string().min(1).max(20_000),
-  /** Style packages to apply; the server default is used when absent. */
+  /** Style packages to apply. The server default applies when absent. */
   styles: z.array(StyleSelectionSchema).max(20).optional(),
 });
 
-// No minLength/maxLength/maxItems here: Vertex AI rejects schemas whose
-// length constraints produce too many decoding states. Limits are stated in
-// the descriptions for the model and enforced in code on the way out.
+// Vertex AI rejects schemas whose length constraints produce too many
+// decoding states, so minLength/maxLength/maxItems stay out. The
+// descriptions state the limits for the model, and code enforces them on
+// the way out.
 export const LintFindingSchema = z.object({
   category: z.enum(CATEGORIES),
   severity: z.enum(SEVERITIES),
   quote: z
     .string()
     .describe(
-      'The smallest problematic span, copied verbatim from the text — every character, ' +
-        'space and punctuation mark must match the source exactly. At most a sentence.',
+      'The smallest problematic span, copied verbatim from the text. Every character, ' +
+        'space, and punctuation mark must match the source exactly. At most a sentence.',
     ),
   message: z
     .string()
@@ -79,7 +81,7 @@ export const MAX_FINDINGS = 50;
 
 /**
  * "Fix with AI" contract: the client sends one passage plus the findings
- * inside it; the server returns a rewrite with every issue resolved.
+ * inside it, and the server returns a rewrite with every issue resolved.
  */
 export const FixRequestSchema = z.object({
   text: z.string().min(1).max(20_000),

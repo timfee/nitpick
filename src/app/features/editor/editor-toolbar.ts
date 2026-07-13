@@ -13,7 +13,7 @@ interface Tool {
   exec: (chain: ChainedCommands) => ChainedCommands;
   /** Mark/node name (with optional attrs) that renders this tool as active. */
   active?: [name: string, attrs?: Record<string, unknown>];
-  /** When set, the tool is disabled unless this returns true. */
+  /** When set, the tool stays disabled unless this returns true. */
   can?: (editor: Editor) => boolean;
 }
 

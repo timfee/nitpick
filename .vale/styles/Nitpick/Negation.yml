@@ -1,0 +1,8 @@
+# Rules written as negative factoids read stilted. Say "do not include X",
+# not "carries no X".
+extends: existence
+message: "'%s' is a stilted negation — write the rule as a direct instruction."
+level: warning
+ignorecase: true
+raw:
+  - \b(?:carr(?:y|ies)|bears?|holds?|contains?)\s+(?:no|neither)\b

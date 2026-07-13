@@ -174,7 +174,7 @@ export class EditorPage {
 
     const styles = this.styleSettings.selections();
     if (!styles.length) {
-      this.notify('All style packages are off — turn some on in settings.');
+      this.notify('All style packages are off. Turn some on in settings.');
       return;
     }
 
@@ -207,7 +207,7 @@ export class EditorPage {
     if (!editor) return;
     const range = lintRangeById(editor.state, finding.id);
     if (!range) {
-      this.notify('That passage changed — run the check again.');
+      this.notify('That passage changed. Run the check again.');
       return;
     }
     editor
@@ -264,7 +264,7 @@ export class EditorPage {
 
   private async openFixDialog(editor: Editor, groups: FixGroup[]): Promise<void> {
     if (!groups.length) {
-      this.notify('The text changed — run the check again.');
+      this.notify('The text changed. Run the check again.');
       return;
     }
     // Counted here, not from the dialog result, so closing mid-flow with
@@ -306,12 +306,12 @@ export class EditorPage {
 
   private handleError(err: unknown): void {
     if (err instanceof HttpErrorResponse && err.status === 401) {
-      this.notify('Session expired — sign in again.');
+      this.notify('Session expired. Sign in again.');
       this.auth.signOut();
       return;
     }
     const body = err instanceof HttpErrorResponse ? (err.error as { error?: unknown }) : null;
-    const detail = typeof body?.error === 'string' ? body.error : 'Lint check failed — try again.';
+    const detail = typeof body?.error === 'string' ? body.error : 'Lint check failed. Try again.';
     this.notify(detail, 5000);
   }
 

@@ -63,9 +63,9 @@ export class Auth {
 
   /**
    * Renders Google's real sign-in button into `host`. The caller overlays it
-   * transparently on a Material button: Google's own click handling is the
-   * only reliable way to open the sign-in popup (`prompt()` gets suppressed
-   * by One Tap cooldowns), while the visible button stays ours.
+   * transparently on a Material button because Google's own pointer handling
+   * is the only reliable way to open the sign-in popup (`prompt()` gets
+   * suppressed by One Tap cooldowns), while the visible button stays ours.
    */
   async renderButton(host: HTMLElement, clientId: string): Promise<void> {
     await loadGis();

@@ -3,10 +3,11 @@ import { environment } from '../environments/environment';
 const first = (...values: (string | undefined)[]) => values.find((value) => !!value);
 
 /**
- * Runtime configuration — no key files, ADC only. Environment variables win;
- * the environment.ts resource set provides the defaults, so a plain
- * `npm start` or `docker run` works with nothing but GOOGLE_CLIENT_ID set
- * (or not even that, once it's filled in environment.ts).
+ * Runtime configuration. ADC handles credentials, so key files never enter
+ * the picture. Environment variables win, and the environment.ts resource
+ * set provides the defaults, so a plain `npm start` or `docker run` works
+ * with nothing but GOOGLE_CLIENT_ID set (or not even that, once it's filled
+ * in environment.ts).
  */
 export const env = {
   /** OAuth 2.0 web client ID used for Sign in with Google. */
@@ -15,10 +16,10 @@ export const env = {
   apiKey: first(process.env['GOOGLE_API_KEY'], environment.googleApiKey) ?? '',
   /** Vertex AI (Agent Platform) model to lint with. */
   model: first(process.env['GEMINI_MODEL'], environment.geminiModel) ?? 'gemini-3-flash-preview',
-  /** Vertex AI location; `global` routes to the nearest capacity. */
+  /** Vertex AI location. `global` routes to the nearest capacity. */
   location: first(process.env['VERTEX_LOCATION'], environment.vertexLocation) ?? 'global',
   /** Falls back to ADC metadata when unset everywhere. */
   project: first(process.env['GOOGLE_CLOUD_PROJECT'], environment.project),
-  /** Optional Workspace domain (`hd` claim) allow-list, for example `example.com`. */
+  /** Optional Workspace domain (`hd` claim) allow-list, such as `example.com`. */
   allowedDomain: process.env['ALLOWED_DOMAIN'],
 };
