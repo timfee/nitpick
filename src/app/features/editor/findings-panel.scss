@@ -26,6 +26,20 @@ header {
   color: var(--mat-sys-on-surface-variant);
   text-align: center;
   padding: 2rem 1rem;
+  // Host is already a flex column; auto margins center the empty copy
+  // vertically when side-docked on desktop.
+  margin-block: auto;
+}
+
+// When docked at the bottom on narrow screens and empty, collapse to a
+// slim bar: the header row alone represents the dock, no wasted height.
+@media (max-width: 60rem) {
+  :host(:not(:has(mat-card))) {
+    padding-block: 0.625rem;
+    .empty {
+      display: none;
+    }
+  }
 }
 .fix-all {
   align-self: flex-start;

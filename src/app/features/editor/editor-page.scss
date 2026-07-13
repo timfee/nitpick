@@ -54,6 +54,11 @@ mat-toolbar {
   @media (max-width: 60rem) {
     grid-template-columns: 1fr;
     grid-template-rows: 1fr minmax(10rem, 40dvh);
+    // An empty dock shouldn't reserve two-fifths of a phone screen; it
+    // grows back to the reserved minimum once findings arrive.
+    &.body--empty {
+      grid-template-rows: 1fr auto;
+    }
   }
 }
 main {
@@ -69,6 +74,13 @@ main {
   }
 }
 nit-findings-panel {
-  background: var(--mat-sys-surface-container-low);
+  // Zoning must survive uncalibrated displays; a hairline plus a full
+  // surface step reads reliably, unlike a ~2% tint delta alone.
+  background: var(--mat-sys-surface-container);
+  border-inline-start: 1px solid var(--mat-sys-outline-variant);
   min-height: 0;
+  @media (max-width: 60rem) {
+    border-inline-start: none;
+    border-block-start: 1px solid var(--mat-sys-outline-variant);
+  }
 }

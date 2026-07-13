@@ -234,6 +234,18 @@ export class EditorPage {
   }
 
   protected openSettings(): void {
+    // Compact viewports get a full-screen sheet instead of a floating card —
+    // there isn't room for a centered dialog with a side rail.
+    if (matchMedia('(max-width: 40rem)').matches) {
+      this.dialog.open(SettingsDialog, {
+        width: '100dvw',
+        height: '100dvh',
+        maxWidth: 'none',
+        autoFocus: 'dialog',
+        panelClass: 'fullscreen',
+      });
+      return;
+    }
     this.dialog.open(SettingsDialog, {
       width: 'min(48rem, calc(100vw - 2rem))',
       maxWidth: 'none',

@@ -1,4 +1,13 @@
-import { Component, effect, inject, input, signal } from '@angular/core';
+import {
+  afterNextRender,
+  Component,
+  DestroyRef,
+  effect,
+  ElementRef,
+  inject,
+  input,
+  signal,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -100,13 +109,17 @@ const TOOLS: ToolbarItem[] = [
     exec: (c) => c.toggleCodeBlock(),
     active: ['codeBlock'],
   },
-  { divider: true },
   { icon: 'horizontal_rule', tip: 'Horizontal rule', exec: (c) => c.setHorizontalRule() },
 ];
 
 @Component({
   selector: 'nit-editor-toolbar',
   imports: [MatButtonModule, MatIconModule, MatTooltipModule],
+  host: {
+    '(scroll)': 'updatePan()',
+    '[class.fade-start]': 'canLeft()',
+    '[class.fade-end]': 'canRight()',
+  },
   template: `
     @for (item of tools; track $index) {
       @if (isDivider(item)) {
@@ -153,6 +166,24 @@ const TOOLS: ToolbarItem[] = [
       &::-webkit-scrollbar {
         display: none;
       }
+      // The fade is the affordance that the strip continues; it only renders
+      // on the side that actually has more content, so a strip that fits
+      // entirely on-screen shows no fade at all.
+      &.fade-end {
+        mask-image: linear-gradient(to right, black calc(100% - 2rem), transparent);
+      }
+      &.fade-start {
+        mask-image: linear-gradient(to right, transparent, black 2rem);
+      }
+      &.fade-start.fade-end {
+        mask-image: linear-gradient(
+          to right,
+          transparent,
+          black 2rem,
+          black calc(100% - 2rem),
+          transparent
+        );
+      }
     }
     button {
       flex-shrink: 0;
@@ -178,10 +209,16 @@ export class EditorToolbar {
   readonly editor = input.required<Editor>();
 
   private readonly dialog = inject(MatDialog);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly destroyRef = inject(DestroyRef);
 
   protected readonly tools = TOOLS;
   /** Bumped on every transaction so tool state stays reactive without zones. */
   private readonly tick = signal(0);
+
+  /** Whether the strip has more content off-screen to the left/right. */
+  protected readonly canLeft = signal(false);
+  protected readonly canRight = signal(false);
 
   constructor() {
     effect((onCleanup) => {
@@ -190,6 +227,21 @@ export class EditorToolbar {
       editor.on('transaction', bump);
       onCleanup(() => editor.off('transaction', bump));
     });
+
+    afterNextRender(() => {
+      const el = this.elementRef.nativeElement;
+      this.updatePan();
+      const observer = new ResizeObserver(() => this.updatePan());
+      observer.observe(el);
+      this.destroyRef.onDestroy(() => observer.disconnect());
+    });
+  }
+
+  /** Recomputes which edges still have unscrolled content, for the fade cue. */
+  protected updatePan(): void {
+    const el = this.elementRef.nativeElement;
+    this.canLeft.set(el.scrollLeft > 0);
+    this.canRight.set(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
   }
 
   protected readonly isDivider = isDivider;

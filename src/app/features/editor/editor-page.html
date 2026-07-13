@@ -34,7 +34,7 @@
   <nit-account-menu />
 </mat-toolbar>
 
-<div class="body">
+<div class="body" [class.body--empty]="!findings().length">
   <main #main>
     @if (editor(); as ed) {
       <tiptap-editor [editor]="ed" />

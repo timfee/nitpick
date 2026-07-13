@@ -109,13 +109,16 @@
         background: color-mix(in srgb, var(--mat-sys-error) 30%, transparent);
       }
     }
+    // tick = target, dot = your value; only one may read as ink, so the tick
+    // is thinned and pushed to on-surface-variant to leave the marker dot as
+    // the sole "you are here" glyph.
     .tick {
       position: absolute;
       top: 0;
       bottom: 0;
-      width: 2px;
+      width: 1.5px;
       transform: translateX(-50%);
-      background: var(--mat-sys-on-surface);
+      background: var(--mat-sys-on-surface-variant);
     }
   }
   /* Ink marker with a surface ring: reads as "you are here" in any zone.
