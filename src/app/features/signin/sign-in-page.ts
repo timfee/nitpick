@@ -16,10 +16,9 @@ import { LintApi } from '../../core/lint-api';
         <mat-card-header>
           <img mat-card-avatar src="favicon.svg" alt="" />
           <mat-card-title>Nitpicker</mat-card-title>
-          <mat-card-subtitle>Prose linting with Gemini</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <p>Sign in with your Google account to continue.</p>
+          <p>Log in to start nitpicking AI prose</p>
           @if (error()) {
             <p class="error">{{ error() }}</p>
           }
@@ -38,6 +37,12 @@ import { LintApi } from '../../core/lint-api';
             <div class="gsi" #gsi></div>
           </div>
         </mat-card-actions>
+        <mat-card-footer>
+          <p class="note">
+            NOTE: This demo AI application uses a single API key for now. Please be Googley until
+            I can charge you directly! :)
+          </p>
+        </mat-card-footer>
       </mat-card>
     </main>
   `,
@@ -54,6 +59,12 @@ import { LintApi } from '../../core/lint-api';
     }
     .error {
       color: var(--mat-sys-error);
+    }
+    .note {
+      margin: 0;
+      padding: 0.75rem 1rem 0.5rem;
+      font: var(--mat-sys-body-small);
+      color: var(--mat-sys-on-surface-variant);
     }
     .signin {
       position: relative;

@@ -1,6 +1,7 @@
 import {
   afterNextRender,
   Component,
+  computed,
   DestroyRef,
   effect,
   ElementRef,
@@ -11,6 +12,7 @@ import {
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor, type ChainedCommands } from '@tiptap/core';
 
@@ -24,6 +26,8 @@ interface Tool {
   active?: [name: string, attrs?: Record<string, unknown>];
   /** When set, the tool stays disabled unless this returns true. */
   can?: (editor: Editor) => boolean;
+  /** Kept visible in the panning strip even at compact widths. */
+  essential?: true;
 }
 
 /** A thin visual break between related groups of tools. */
@@ -45,12 +49,40 @@ type ToolbarItem = Tool | Divider | LinkAction;
 const isDivider = (item: ToolbarItem): item is Divider => 'divider' in item;
 const isLinkAction = (item: ToolbarItem): item is LinkAction => 'link' in item;
 
+const undoTool: Tool = {
+  icon: 'undo',
+  tip: 'Undo',
+  exec: (c) => c.undo(),
+  can: (e) => e.can().undo(),
+  essential: true,
+};
+const redoTool: Tool = {
+  icon: 'redo',
+  tip: 'Redo',
+  exec: (c) => c.redo(),
+  can: (e) => e.can().redo(),
+  essential: true,
+};
+const essentialDivider: Divider = { divider: true };
+const boldTool: Tool = {
+  icon: 'format_bold',
+  tip: 'Bold',
+  exec: (c) => c.toggleBold(),
+  active: ['bold'],
+};
+const italicTool: Tool = {
+  icon: 'format_italic',
+  tip: 'Italic',
+  exec: (c) => c.toggleItalic(),
+  active: ['italic'],
+};
+
 const TOOLS: ToolbarItem[] = [
-  { icon: 'undo', tip: 'Undo', exec: (c) => c.undo(), can: (e) => e.can().undo() },
-  { icon: 'redo', tip: 'Redo', exec: (c) => c.redo(), can: (e) => e.can().redo() },
-  { divider: true },
-  { icon: 'format_bold', tip: 'Bold', exec: (c) => c.toggleBold(), active: ['bold'] },
-  { icon: 'format_italic', tip: 'Italic', exec: (c) => c.toggleItalic(), active: ['italic'] },
+  undoTool,
+  redoTool,
+  essentialDivider,
+  boldTool,
+  italicTool,
   {
     icon: 'strikethrough_s',
     tip: 'Strikethrough',
@@ -112,16 +144,29 @@ const TOOLS: ToolbarItem[] = [
   { icon: 'horizontal_rule', tip: 'Horizontal rule', exec: (c) => c.setHorizontalRule() },
 ];
 
+/** The strip that stays visible at compact widths — undo/redo plus the most-used marks. */
+// At compact widths the app bar's fixed controls leave ~140px for this strip;
+// undo/redo plus the overflow kebab is what genuinely fits without panning.
+const ESSENTIAL_TOOLS: ToolbarItem[] = [undoTool, redoTool];
+
+/**
+ * Everything else, reachable through the overflow menu at compact widths. A
+ * flat menu has no use for the dividers that group the panning strip.
+ */
+const OVERFLOW_TOOLS: (Tool | LinkAction)[] = TOOLS.filter(
+  (item): item is Tool | LinkAction => !isDivider(item) && (isLinkAction(item) || !item.essential),
+);
+
 @Component({
   selector: 'nit-editor-toolbar',
-  imports: [MatButtonModule, MatIconModule, MatTooltipModule],
+  imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule],
   host: {
     '(scroll)': 'updatePan()',
     '[class.fade-start]': 'canLeft()',
     '[class.fade-end]': 'canRight()',
   },
   template: `
-    @for (item of tools; track $index) {
+    @for (item of visibleTools(); track $index) {
       @if (isDivider(item)) {
         <span class="divider"></span>
       } @else if (isLinkAction(item)) {
@@ -147,6 +192,26 @@ const TOOLS: ToolbarItem[] = [
           <mat-icon>{{ item.icon }}</mat-icon>
         </button>
       }
+    }
+    @if (compact()) {
+      <button matIconButton matTooltip="More formatting" aria-label="More formatting" [matMenuTriggerFor]="more">
+        <mat-icon>more_horiz</mat-icon>
+      </button>
+      <mat-menu #more="matMenu" class="nit-toolbar-more">
+        @for (item of overflowTools; track $index) {
+          @if (isLinkAction(item)) {
+            <button mat-menu-item [disabled]="isLinkDisabled()" (click)="toggleLink()">
+              <mat-icon>link</mat-icon>
+              Link
+            </button>
+          } @else {
+            <button mat-menu-item [class.active]="isOn(item)" [disabled]="isDisabled(item)" (click)="run(item)">
+              <mat-icon>{{ item.icon }}</mat-icon>
+              {{ item.tip }}
+            </button>
+          }
+        }
+      </mat-menu>
     }
   `,
   styles: `
@@ -212,13 +277,17 @@ export class EditorToolbar {
   private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
   private readonly destroyRef = inject(DestroyRef);
 
-  protected readonly tools = TOOLS;
   /** Bumped on every transaction so tool state stays reactive without zones. */
   private readonly tick = signal(0);
 
   /** Whether the strip has more content off-screen to the left/right. */
   protected readonly canLeft = signal(false);
   protected readonly canRight = signal(false);
+
+  /** Below this width, only essential tools show inline; the rest move into the overflow menu. */
+  protected readonly compact = signal(false);
+  protected readonly overflowTools = OVERFLOW_TOOLS;
+  protected readonly visibleTools = computed(() => (this.compact() ? ESSENTIAL_TOOLS : TOOLS));
 
   constructor() {
     effect((onCleanup) => {
@@ -234,6 +303,12 @@ export class EditorToolbar {
       const observer = new ResizeObserver(() => this.updatePan());
       observer.observe(el);
       this.destroyRef.onDestroy(() => observer.disconnect());
+
+      const query = matchMedia('(max-width: 40rem)');
+      this.compact.set(query.matches);
+      const onChange = (e: MediaQueryListEvent) => this.compact.set(e.matches);
+      query.addEventListener('change', onChange);
+      this.destroyRef.onDestroy(() => query.removeEventListener('change', onChange));
     });
   }
 

@@ -1,8 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatListModule } from '@angular/material/list';
+import { MatListModule, type MatSelectionListChange } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { STYLE_RULES, type StyleRule } from '../../../shared/style-rules';
@@ -11,13 +10,7 @@ import { StyleSettings } from '../../core/style-settings';
 
 @Component({
   selector: 'nit-settings-dialog',
-  imports: [
-    MatButtonModule,
-    MatCheckboxModule,
-    MatDialogModule,
-    MatListModule,
-    MatTooltipModule,
-  ],
+  imports: [MatButtonModule, MatDialogModule, MatListModule, MatTooltipModule],
   templateUrl: './settings-dialog.html',
   styleUrl: './settings-dialog.scss',
 })
@@ -32,5 +25,11 @@ export class SettingsDialog {
 
   protected rulesFor(id: string): readonly StyleRule[] {
     return STYLE_RULES[id] ?? [];
+  }
+
+  protected onRuleToggle(pkgId: string, change: MatSelectionListChange): void {
+    for (const option of change.options) {
+      this.settings.setRule(pkgId, option.value as string, option.selected);
+    }
   }
 }

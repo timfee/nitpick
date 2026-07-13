@@ -28,31 +28,33 @@
         <header>
           <div class="text">
             <h3>{{ pkg.label }}</h3>
-            <span class="summary">{{ pkg.summary }}</span>
+            <p class="summary">{{ pkg.summary }}</p>
           </div>
-          <button matButton (click)="settings.setAllRules(pkg.id, true)">All</button>
-          <button matButton (click)="settings.setAllRules(pkg.id, false)">None</button>
+          <div class="bulk">
+            <button matButton (click)="settings.setAllRules(pkg.id, true)">All</button>
+            <button matButton (click)="settings.setAllRules(pkg.id, false)">None</button>
+          </div>
         </header>
 
-        <div class="cols" aria-hidden="true">
-          <span>Rule</span>
-          <span class="hint-col">What it flags</span>
-        </div>
-        <ul class="rules" role="list">
+        <!--
+          Material's own composition for a toggleable settings list: two-line
+          list options with a leading checkbox. Alignment, row-sized targets,
+          and list semantics come from the component, not hand-rolled grids.
+        -->
+        <mat-selection-list class="rules" (selectionChange)="onRuleToggle(pkg.id, $event)">
           @for (rule of rulesFor(pkg.id); track rule.id) {
-            <li>
-              <mat-checkbox
-                [checked]="settings.ruleEnabled(pkg.id, rule.id)"
-                (change)="settings.setRule(pkg.id, rule.id, $event.checked)"
-              >
-                <span class="rule-name">{{ rule.id }}</span>
-              </mat-checkbox>
+            <mat-list-option
+              togglePosition="before"
+              [value]="rule.id"
+              [selected]="settings.ruleEnabled(pkg.id, rule.id)"
+            >
+              <span matListItemTitle>{{ rule.id }}</span>
               @if (rule.hint) {
-                <span class="rule-hint hint-col" [matTooltip]="rule.hint">{{ rule.hint }}</span>
+                <span matListItemLine [matTooltip]="rule.hint">{{ rule.hint }}</span>
               }
-            </li>
+            </mat-list-option>
           }
-        </ul>
+        </mat-selection-list>
       }
     </section>
   </div>
