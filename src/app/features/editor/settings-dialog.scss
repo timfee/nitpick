@@ -1,10 +1,11 @@
+// One dominant title; the package name below steps down to title-medium.
 h2[mat-dialog-title] {
-  font: var(--mat-sys-title-medium);
+  font: var(--mat-sys-title-large);
 }
 .layout {
   display: grid;
   grid-template-columns: 13rem 1fr;
-  gap: 1.5rem;
+  gap: 1.25rem;
   height: min(70vh, 30rem);
   @media (max-width: 40rem) {
     grid-template-columns: 1fr;
@@ -29,6 +30,10 @@ h2[mat-dialog-title] {
 
 mat-nav-list {
   overflow-y: auto;
+  // The rail and the detail pane are separate zones; a hairline makes the
+  // boundary explicit instead of relying on whitespace alone.
+  border-inline-end: 1px solid var(--mat-sys-outline-variant);
+  padding-inline-end: 0.75rem;
   // Strip native button chrome; Material's list supplies the visuals.
   button {
     border: 0;
@@ -57,6 +62,7 @@ mat-nav-list {
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
+    border-inline-end: none;
     padding-block: 0;
     gap: 0.5rem;
     scroll-padding-inline: 1rem;
@@ -85,11 +91,14 @@ section {
   min-height: 0;
   min-width: 0;
 }
+// Header zone: name + summary anchored left, bulk actions centered against
+// them on the right, and a hairline closing the zone off from the list.
 header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.75rem;
-  padding-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--mat-sys-outline-variant);
   --mat-button-text-container-height: 2rem;
   --mat-button-text-horizontal-padding: 0.5rem;
   .text {
@@ -108,70 +117,24 @@ header {
       }
     }
     .summary {
+      margin: 0;
       font: var(--mat-sys-body-small);
       color: var(--mat-sys-on-surface-variant);
     }
   }
+  .bulk {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
 }
 
-// One row per rule: [checkbox + name | hint], mirroring the fix dialog's
-// table language. 2.5rem indent lines the header up with the rule names.
-.cols {
-  display: grid;
-  grid-template-columns: 13rem 1fr;
-  gap: 1rem;
-  padding: 0 0 0.375rem 2.5rem;
-  border-bottom: 1px solid var(--mat-sys-outline-variant);
-  font: var(--mat-sys-label-small);
-  color: var(--mat-sys-on-surface-variant);
-}
 .rules {
   flex: 1;
   overflow-y: auto;
-  list-style: none;
-  margin: 0;
-  padding: 0.25rem 0 0;
-  li {
-    display: grid;
-    grid-template-columns: 15.5rem 1fr;
-    gap: 1rem;
-    align-items: center;
-    border-radius: 0.5rem;
-    &:hover {
-      background: var(--mat-sys-surface-container-high);
-    }
-  }
-  mat-checkbox {
-    --mdc-checkbox-state-layer-size: 34px;
-    min-width: 0;
-  }
-}
-.rule-name {
-  display: inline-block;
-  max-width: 12rem;
-  font: var(--mat-sys-body-medium);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  vertical-align: bottom;
-}
-.rule-hint {
-  font: var(--mat-sys-body-small);
-  color: var(--mat-sys-on-surface-variant);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
-@media (max-width: 40rem) {
-  .hint-col {
-    display: none;
-  }
-  // A single-column checkbox list needs no "Rule" column caption.
-  .cols {
-    display: none;
-  }
-  .rules li {
-    grid-template-columns: 1fr;
+  // The list supplies two-line rows (title + supporting hint); we only mute
+  // the hint line and let Material own alignment and row targets.
+  [matlistitemline] {
+    color: var(--mat-sys-on-surface-variant);
   }
 }

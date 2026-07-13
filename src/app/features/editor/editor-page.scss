@@ -34,6 +34,13 @@ mat-toolbar {
   .check {
     white-space: nowrap;
     flex-shrink: 0;
+    // Compact widths need the label's width more than its second word; the
+    // action stays labelled, just shorter.
+    @media (max-width: 40rem) {
+      .check-label-rest {
+        display: none;
+      }
+    }
     // Progress only shows while disabled, so tint the spinner for the
     // disabled container rather than the default on-primary.
     --mat-button-filled-progress-active-indicator-color: var(--mat-sys-primary);

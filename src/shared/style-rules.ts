@@ -15,23 +15,23 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
   "proselint": [
     {
       "id": "Airlinese",
-      "hint": "'…' is airlinese."
+      "hint": "'taking off momentarily' is airlinese."
     },
     {
       "id": "AnimalLabels",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'avine' instead of 'bird-like'."
     },
     {
       "id": "Annotations",
-      "hint": "'…' left in text."
+      "hint": "'XXX' left in text."
     },
     {
       "id": "Apologizing",
-      "hint": "Excessive apologizing: '…'"
+      "hint": "Excessive apologizing: 'More research is needed'"
     },
     {
       "id": "Archaisms",
-      "hint": "'…' is archaic."
+      "hint": "'alack' is archaic."
     },
     {
       "id": "But",
@@ -39,11 +39,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Cliches",
-      "hint": "'…' is a cliche."
+      "hint": "'a chip off the old block' is a cliche."
     },
     {
       "id": "CorporateSpeak",
-      "hint": "'…' is corporate speak."
+      "hint": "'at the end of the day' is corporate speak."
     },
     {
       "id": "Currency",
@@ -51,7 +51,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Cursing",
-      "hint": "Consider replacing '…'."
+      "hint": "Consider replacing 'shit'."
     },
     {
       "id": "DateCase",
@@ -71,15 +71,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "DenizenLabels",
-      "hint": "Did you mean '…'?"
+      "hint": "Did you mean 'Alabaman'?"
     },
     {
       "id": "Diacritical",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'beau idéal' instead of 'beau ideal'."
     },
     {
       "id": "GenderBias",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'author' instead of 'authoress'."
     },
     {
       "id": "GroupTerms",
@@ -87,7 +87,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Hedging",
-      "hint": "'…' is hedging."
+      "hint": "'I would argue that' is hedging."
     },
     {
       "id": "Hyperbole",
@@ -95,31 +95,31 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Jargon",
-      "hint": "'…' is jargon."
+      "hint": "'in the affirmative' is jargon."
     },
     {
       "id": "LGBTOffensive",
-      "hint": "'…' is offensive. Remove it or consider the context."
+      "hint": "'fag' is offensive. Remove it or consider the context."
     },
     {
       "id": "LGBTTerms",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'gay man' instead of 'homosexual man'."
     },
     {
       "id": "Malapropisms",
-      "hint": "'…' is a malapropism."
+      "hint": "'the infinitesimal universe' is a malapropism."
     },
     {
       "id": "Needless",
-      "hint": "Prefer '…' over '…'"
+      "hint": "Prefer 'abolition' over 'abolishment'"
     },
     {
       "id": "Nonwords",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'effrontery' instead of 'affrontery'."
     },
     {
       "id": "Oxymorons",
-      "hint": "'…' is an oxymoron."
+      "hint": "'amateur expert' is an oxymoron."
     },
     {
       "id": "P-Value",
@@ -127,11 +127,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "RASSyndrome",
-      "hint": "'…' is redundant."
+      "hint": "'ABM missile' is redundant."
     },
     {
       "id": "Skunked",
-      "hint": "'…' is a bit of a skunked term — impossible to use without issue."
+      "hint": "'bona fides' is a bit of a skunked term — impossible to use without issue."
     },
     {
       "id": "Spelling",
@@ -143,11 +143,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Uncomparables",
-      "hint": "'…' is not comparable"
+      "hint": "'absolute' is not comparable"
     },
     {
       "id": "Very",
-      "hint": "Remove '…'."
+      "hint": "Remove 'very'."
     }
   ],
   "google": [
@@ -165,7 +165,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Contractions",
-      "hint": "Use '…' instead of '…'."
+      "hint": "Use 'aren't' instead of 'are not'."
     },
     {
       "id": "DateFormat",
@@ -189,11 +189,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Gender",
-      "hint": "Don't use '…' as a gender-neutral pronoun."
+      "hint": "Don't use 'he/she' as a gender-neutral pronoun."
     },
     {
       "id": "GenderBias",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'author' instead of 'authoress'."
     },
     {
       "id": "HeadingPunctuation",
@@ -229,7 +229,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Passive",
-      "hint": "In general, use active voice instead of passive voice ('…')."
+      "hint": "In general, use active voice instead of passive voice ('awoken')."
     },
     {
       "id": "Periods",
@@ -249,7 +249,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Slang",
-      "hint": "Don't use internet slang abbreviations such as '…'."
+      "hint": "Don't use internet slang abbreviations such as 'tl;dr'."
     },
     {
       "id": "Spacing",
@@ -257,7 +257,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Spelling",
-      "hint": "In general, use American spelling instead of '…'."
+      "hint": "In general, use American spelling instead of 'colour'."
     },
     {
       "id": "Units",
@@ -265,21 +265,21 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "We",
-      "hint": "Try to avoid using first-person plural like '…'."
+      "hint": "Try to avoid using first-person plural like 'we'."
     },
     {
       "id": "Will",
-      "hint": "Avoid using '…'."
+      "hint": "Avoid using 'will'."
     },
     {
       "id": "WordList",
-      "hint": "Use '…' instead of '…'."
+      "hint": "Use 'preceding' instead of 'above'."
     }
   ],
   "microsoft": [
     {
       "id": "Accessibility",
-      "hint": "Don't use language (such as '…') that defines people by their disability."
+      "hint": "Don't use language (such as 'a victim of') that defines people by their disability."
     },
     {
       "id": "Acronyms",
@@ -287,7 +287,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Adverbs",
-      "hint": "Remove '…' if it's not important to the meaning of the statement."
+      "hint": "Remove 'abnormally' if it's not important to the meaning of the statement."
     },
     {
       "id": "AMPM",
@@ -299,11 +299,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Avoid",
-      "hint": "Don't use '…'. See the A-Z word list for details."
+      "hint": "Don't use 'abortion'. See the A-Z word list for details."
     },
     {
       "id": "Contractions",
-      "hint": "Use '…' instead of '…'."
+      "hint": "Use 'aren't' instead of 'are not'."
     },
     {
       "id": "Dashes",
@@ -335,11 +335,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Gender",
-      "hint": "Don't use '…'."
+      "hint": "Don't use 'he/she'."
     },
     {
       "id": "GenderBias",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'author' instead of 'authoress'."
     },
     {
       "id": "GeneralURL",
@@ -379,7 +379,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Passive",
-      "hint": "'…' looks like passive voice."
+      "hint": "'awoken' looks like passive voice."
     },
     {
       "id": "Percentages",
@@ -415,11 +415,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Terms",
-      "hint": "Prefer '…' over '…'."
+      "hint": "Prefer 'every day' over '24/7'."
     },
     {
       "id": "Units",
-      "hint": "Don't spell out the number in '…'."
+      "hint": "Don't spell out the number in 'cm'."
     },
     {
       "id": "URLFormat",
@@ -427,15 +427,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Vocab",
-      "hint": "Verify your use of '…' with the A-Z word list."
+      "hint": "Verify your use of 'above' with the A-Z word list."
     },
     {
       "id": "We",
-      "hint": "Try to avoid using first-person plural like '…'."
+      "hint": "Try to avoid using first-person plural like 'we'."
     },
     {
       "id": "Wordiness",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'myriad' instead of 'a myriad of'."
     }
   ],
   "redhat": [
@@ -445,19 +445,19 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "CaseSensitiveTerms",
-      "hint": "Use '…' rather than '…'."
+      "hint": "Use 'Red Hat OpenShift Dedicated' rather than 'OD'."
     },
     {
       "id": "Conjunctions",
-      "hint": "Do not overuse beginning sentences with '…'."
+      "hint": "Do not overuse beginning sentences with '^And'."
     },
     {
       "id": "ConsciousLanguage",
-      "hint": "Use … rather than '…'."
+      "hint": "Use blocklist rather than 'blacklist'."
     },
     {
       "id": "Contractions",
-      "hint": "Avoid contractions. Use '…' rather than '….'"
+      "hint": "Avoid contractions. Use 'are not' rather than 'aren't.'"
     },
     {
       "id": "Definitions",
@@ -489,7 +489,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Hyphens",
-      "hint": "Use … rather than '…'."
+      "hint": "Use ad hoc rather than 'ad-hoc'."
     },
     {
       "id": "MergeConflictMarkers",
@@ -501,7 +501,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ObviousTerms",
-      "hint": "Consider not documenting … because it is self-explanatory."
+      "hint": "Consider not documenting Description field because it is self-explanatory."
     },
     {
       "id": "OxfordComma",
@@ -513,7 +513,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "PassiveVoice",
-      "hint": "'…' is passive voice. In general, use active voice. Consult the style guide for acceptable use of passive voice."
+      "hint": "'awoken' is passive voice. In general, use active voice. Consult the style guide for acceptable use of passive voice."
     },
     {
       "id": "ProductCentricWriting",
@@ -525,7 +525,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ReleaseNotes",
-      "hint": "For release notes, consider using '…' rather than '…'."
+      "hint": "For release notes, consider using 'With this update' rather than 'Now'."
     },
     {
       "id": "RepeatedWords",
@@ -533,7 +533,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "SelfReferentialText",
-      "hint": "Avoid using self-referential text such as '…'."
+      "hint": "Avoid using self-referential text such as 'this topic'."
     },
     {
       "id": "SentenceLength",
@@ -545,7 +545,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "SimpleWords",
-      "hint": "Use simple language. Consider using '…' rather than '…'."
+      "hint": "Use simple language. Consider using 'plenty' rather than 'abundance'."
     },
     {
       "id": "Slash",
@@ -569,15 +569,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "TermsErrors",
-      "hint": "Use '…' rather than '…'."
+      "hint": "Use 'hosted control planes' rather than 'HyperShift'."
     },
     {
       "id": "TermsSuggestions",
-      "hint": "Depending on the context, consider using '…' rather than '…'."
+      "hint": "Depending on the context, consider using 'afterward' rather than 'afterwards'."
     },
     {
       "id": "TermsWarnings",
-      "hint": "Consider using '…' rather than '…' unless updating existing content that uses the term."
+      "hint": "Consider using 'uppercase' rather than 'all caps' unless updating existing content that uses the term."
     },
     {
       "id": "UserReplacedValues",
@@ -591,11 +591,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
   "write-good": [
     {
       "id": "Cliches",
-      "hint": "Try to avoid using clichés like '…'."
+      "hint": "Try to avoid using clichés like 'a chip off the old block'."
     },
     {
       "id": "E-Prime",
-      "hint": "Try to avoid using '…'."
+      "hint": "Try to avoid using 'am'."
     },
     {
       "id": "Illusions",
@@ -603,7 +603,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Passive",
-      "hint": "'…' may be passive voice. Use active voice if you can."
+      "hint": "'awoken' may be passive voice. Use active voice if you can."
     },
     {
       "id": "So",
@@ -615,29 +615,29 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "TooWordy",
-      "hint": "'…' is too wordy."
+      "hint": "'a number of' is too wordy."
     },
     {
       "id": "Weasel",
-      "hint": "'…' is a weasel word!"
+      "hint": "'clearly' is a weasel word!"
     }
   ],
   "alex": [
     {
       "id": "Ablist",
-      "hint": "When referring to a person, consider using '…' instead of '…'."
+      "hint": "When referring to a person, consider using 'non-disabled' instead of 'ablebodied'."
     },
     {
       "id": "Condescending",
-      "hint": "Using '…' may come across as condescending."
+      "hint": "Using 'obvious' may come across as condescending."
     },
     {
       "id": "Gendered",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'average person' instead of 'average man'."
     },
     {
       "id": "LGBTQ",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'bisexual' instead of 'bi'."
     },
     {
       "id": "OCD",
@@ -649,45 +649,45 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ProfanityLikely",
-      "hint": "Don't use '…', it's profane."
+      "hint": "Don't use 'abeed', it's profane."
     },
     {
       "id": "ProfanityMaybe",
-      "hint": "Reconsider using '…', it may be profane."
+      "hint": "Reconsider using 'abbo', it may be profane."
     },
     {
       "id": "ProfanityUnlikely",
-      "hint": "Be careful with '…', it's profane in some cases."
+      "hint": "Be careful with 'adult', it's profane in some cases."
     },
     {
       "id": "Race",
-      "hint": "Consider using '…' instead of '…'."
+      "hint": "Consider using 'enemy territory' instead of 'Indian country'."
     },
     {
       "id": "Suicide",
-      "hint": "Consider using '…' instead of '…' (which may be insensitive)."
+      "hint": "Consider using 'die by suicide' instead of 'commit suicide' (which may be insensitive)."
     }
   ],
   "joblint": [
     {
       "id": "Acronyms",
-      "hint": "Use '…' instead of '…'"
+      "hint": "Tech people know their acronyms; you come across as not very tech-savvy if you expand them."
     },
     {
       "id": "Benefits",
-      "hint": "Avoid using '…'"
+      "hint": "Benefits such as 'coffee' are not bad in themselves, but their appearance in a job post often disguises the fact that there are few real benefits to working for a company."
     },
     {
       "id": "Bro",
-      "hint": "Avoid using '…'"
+      "hint": "Bro culture terminology can really reduce the number of people likely to show interest."
     },
     {
       "id": "Competitive",
-      "hint": "Avoid using '…'"
+      "hint": "Competition can be healthy, but for a lot of people a heavily competitive environment can be a strain."
     },
     {
       "id": "Derogatory",
-      "hint": "Avoid using '…'"
+      "hint": "When you use '…,' you're being discriminatory."
     },
     {
       "id": "DevEnv",
@@ -695,19 +695,19 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "DumbTitles",
-      "hint": "Avoid using '…'"
+      "hint": "Referring to tech people as 'BAMF' devalues the work that they do and shows a lack of respect and professionalism."
     },
     {
       "id": "Gendered",
-      "hint": "Avoid using '…'"
+      "hint": "Use of 'gran' could indicate that you're discriminating in favour of a certain gender."
     },
     {
       "id": "Hair",
-      "hint": "Avoid using '…'"
+      "hint": "The use of '…' indicates that you're only looking for male developers."
     },
     {
       "id": "LegacyTech",
-      "hint": "Avoid using '…'"
+      "hint": "Legacy technologies can reduce the number of people interested in a job."
     },
     {
       "id": "Meritocracy",
@@ -715,27 +715,27 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Profanity",
-      "hint": "Remove '…'"
+      "hint": "Remove 'bloody'"
     },
     {
       "id": "Reassure",
-      "hint": "Avoid using '…'"
+      "hint": "Something feels off when you need to reassure someone of something that should definitely not be an issue in any workplace."
     },
     {
       "id": "Sexualised",
-      "hint": "Avoid using '…'"
+      "hint": "Terms like 'gay for' are often used if the person writing a post doesn't know what they are talking about."
     },
     {
       "id": "Starter",
-      "hint": "Avoid using '…'"
+      "hint": "Terms like 'juggle' and others can indicate that the person writing a job post is unaware of the time and effort involved in preparing a new starter for work."
     },
     {
       "id": "TechTerms",
-      "hint": "Use '…' instead of '…'"
+      "hint": "Use 'Ruby on Rails' instead of 'ruby on rail'"
     },
     {
       "id": "Visionary",
-      "hint": "Avoid using '…'"
+      "hint": "Terms like 'paradigm' often indicate that a non technical person (perhaps a CEO or stakeholder) has been involved in writing the post."
     }
   ],
   "readability": [
@@ -771,7 +771,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
   "ai-tells": [
     {
       "id": "AbsoluteAssertions",
-      "hint": "AI overreach: '…'. Verify this claim or soften it."
+      "hint": "AI overreach: 'the only way to'. Verify this claim or soften it."
     },
     {
       "id": "AffirmativeFormulas",
@@ -783,15 +783,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "AICompoundPhrases",
-      "hint": "AI fingerprint: '…'. Rewrite with concrete specifics instead of this clichéd phrase."
+      "hint": "AI fingerprint: 'rich tapestry'. Rewrite with concrete specifics instead of this clichéd phrase."
     },
     {
       "id": "AnnouncementHeadings",
-      "hint": "AI announcement heading: '…'. Cut the heading or rename it to the topic."
+      "hint": "AI announcement heading: 'What You'll Learn'. Cut the heading or rename it to the topic."
     },
     {
       "id": "AnthropomorphicJustification",
-      "hint": "AI cliché: '…'. Say what you mean directly."
+      "hint": "AI cliché: 'earned its keep'. Say what you mean directly."
     },
     {
       "id": "CataphoricForecasting",
@@ -799,7 +799,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ClosingPleasantries",
-      "hint": "AI closing: '…'. Delete it and end with your actual content."
+      "hint": "AI closing: 'I hope this helps'. Delete it and end with your actual content."
     },
     {
       "id": "ColloquialAssessments",
@@ -811,7 +811,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ConclusionMarkers",
-      "hint": "AI conclusion: '…'. Delete this and end on your final point."
+      "hint": "AI conclusion: 'In conclusion'. Delete this and end on your final point."
     },
     {
       "id": "ContrastiveFormulas",
@@ -827,7 +827,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "DespiteChallenges",
-      "hint": "AI despite-formula: '…'. Engage with the challenges substantively or remove the hedge."
+      "hint": "AI despite-formula: 'despite its challenges'. Engage with the challenges substantively or remove the hedge."
     },
     {
       "id": "EmDashUsage",
@@ -835,7 +835,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "EmphaticCopula",
-      "hint": "AI emphasis: '…'. Remove the italics. Emphasizing a copula rarely adds meaning."
+      "hint": "AI emphasis: ' _is_'. Remove the italics. Emphasizing a copula rarely adds meaning."
     },
     {
       "id": "EmptyPadding",
@@ -847,15 +847,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ExplainerHeadings",
-      "hint": "AI explainer heading: '…'. Name what you're explaining instead."
+      "hint": "AI explainer heading: 'Deep Dive'. Name what you're explaining instead."
     },
     {
       "id": "FalseBalance",
-      "hint": "AI evasion: '…'. Take a clear position or remove the hedge."
+      "hint": "AI evasion: 'both sides of the argument'. Take a clear position or remove the hedge."
     },
     {
       "id": "FalseExclusivity",
-      "hint": "AI false exclusivity: '…'. State the point directly without claiming insider knowledge."
+      "hint": "AI false exclusivity: 'nobody talks about'. State the point directly without claiming insider knowledge."
     },
     {
       "id": "FigurativeLands",
@@ -867,15 +867,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "FillerPhrases",
-      "hint": "AI filler: '…'. Delete this phrase. It adds no meaning."
+      "hint": "AI filler: 'a wide range of'. Delete this phrase. It adds no meaning."
     },
     {
       "id": "FormalRegister",
-      "hint": "AI formalism: '…'. Use a plainer everyday word (e.g., 'use', 'help', 'start')."
+      "hint": "AI formalism: 'utilize'. Use a plainer everyday word (e.g., 'use', 'help', 'start')."
     },
     {
       "id": "FormalTransitions",
-      "hint": "AI transition: '…'. Delete it, or use a simpler connector like 'and', 'but', or 'so'."
+      "hint": "AI transition: 'Moreover'. Delete it, or use a simpler connector like 'and', 'but', or 'so'."
     },
     {
       "id": "GrowthMetaphors",
@@ -883,7 +883,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "HedgingPhrases",
-      "hint": "AI hedge: '…'. Delete this throat-clearing and state your point directly."
+      "hint": "AI hedge: 'It's important to note that'. Delete this throat-clearing and state your point directly."
     },
     {
       "id": "LabelAndExplain",
@@ -891,15 +891,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ListIntroductions",
-      "hint": "AI list intro: '…'. Skip the announcement and present the content directly."
+      "hint": "AI list intro: 'Below you'll find'. Skip the announcement and present the content directly."
     },
     {
       "id": "MarketingHeadings",
-      "hint": "AI marketing heading: '…'. Strip the puffery and name the topic plainly."
+      "hint": "AI marketing heading: 'The Ultimate Guide'. Strip the puffery and name the topic plainly."
     },
     {
       "id": "Metacommentary",
-      "hint": "AI metacommentary: '…'. Delete it or replace it with substantive content."
+      "hint": "AI metacommentary: 'This matters because'. Delete it or replace it with substantive content."
     },
     {
       "id": "MicDrop",
@@ -911,19 +911,19 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "NarrativePivots",
-      "hint": "AI narrative pivot: '…'. State your point directly."
+      "hint": "AI narrative pivot: 'something shifted'. State your point directly."
     },
     {
       "id": "OpeningCliches",
-      "hint": "AI opening: '…'. Start with your actual point instead of this generic lead-in."
+      "hint": "AI opening: 'In today's rapidly evolving'. Start with your actual point instead of this generic lead-in."
     },
     {
       "id": "OrganicConsequence",
-      "hint": "AI inevitability: '…'. Say the choice was designed that way."
+      "hint": "AI inevitability: 'falls out naturally'. Say the choice was designed that way."
     },
     {
       "id": "OverusedVocabulary",
-      "hint": "AI vocabulary: '…'. Replace with a more specific or common word."
+      "hint": "AI vocabulary: 'delve'. Replace with a more specific or common word."
     },
     {
       "id": "OverusedVocabularyVerbs",
@@ -935,15 +935,15 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "ParticipialPadding",
-      "hint": "AI participial padding: '…'. Delete it or make the point concrete."
+      "hint": "AI participial padding: 'highlighting its importance'. Delete it or make the point concrete."
     },
     {
       "id": "PromotionalPuffery",
-      "hint": "AI puffery: '…'. Use neutral, specific language."
+      "hint": "AI puffery: 'nestled in the'. Use neutral, specific language."
     },
     {
       "id": "RedundantPrecaution",
-      "hint": "AI cliché: '…'. Name the specific safeguard or cut the phrase."
+      "hint": "AI cliché: 'belt and suspenders'. Name the specific safeguard or cut the phrase."
     },
     {
       "id": "ResonateOveruse",
@@ -951,11 +951,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "RestatementMarkers",
-      "hint": "AI restatement: '…'. Delete it and trust your original phrasing."
+      "hint": "AI restatement: 'In other words'. Delete it and trust your original phrasing."
     },
     {
       "id": "RhetoricalDevices",
-      "hint": "AI rhetoric: '…'. Remove it or rephrase as a plain statement."
+      "hint": "AI rhetoric: 'The test:'. Remove it or rephrase as a plain statement."
     },
     {
       "id": "RhetoricalSelfAnswer",
@@ -963,7 +963,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "SelfReference",
-      "hint": "AI cross-reference: '…'. Rewrite the passage to work without the cross-reference."
+      "hint": "AI cross-reference: 'as mentioned above'. Rewrite the passage to work without the cross-reference."
     },
     {
       "id": "SemicolonUsage",
@@ -971,11 +971,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "SequencingMarkers",
-      "hint": "AI sequencing: '…'. Use natural transitions or write an actual list."
+      "hint": "AI sequencing: 'Firstly'. Use natural transitions or write an actual list."
     },
     {
       "id": "ServesAsDodge",
-      "hint": "AI copula dodge: '…'. Use 'is' or 'are' instead of this inflated construction."
+      "hint": "AI copula dodge: 'serves as a'. Use 'is' or 'are' instead of this inflated construction."
     },
     {
       "id": "ShipOveruse",
@@ -991,23 +991,23 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "StructureAnnouncements",
-      "hint": "AI structure announcement: '…'. Present the content instead of narrating that you're about to."
+      "hint": "AI structure announcement: 'key takeaway'. Present the content instead of narrating that you're about to."
     },
     {
       "id": "SycophancyMarkers",
-      "hint": "AI sycophancy: '…'. Delete this. It sounds robotic and insincere."
+      "hint": "AI sycophancy: 'Great question'. Delete this. It sounds robotic and insincere."
     },
     {
       "id": "UnpackExplore",
-      "hint": "AI explainer prompt: '…'. Explain it directly instead of announcing it."
+      "hint": "AI explainer prompt: 'Let's unpack'. Explain it directly instead of announcing it."
     },
     {
       "id": "UrgencyInflation",
-      "hint": "AI urgency: '…'. Delete it or show the stakes concretely."
+      "hint": "AI urgency: 'cannot be overstated'. Delete it or show the stakes concretely."
     },
     {
       "id": "VagueAttributions",
-      "hint": "AI vague attribution: '…'. Name the specific source or delete the claim."
+      "hint": "AI vague attribution: 'experts argue'. Name the specific source or delete the claim."
     },
     {
       "id": "VerbTricolon",
@@ -1019,7 +1019,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "WrapUpHeadings",
-      "hint": "AI wrap-up heading: '…'. Delete the section or rename the heading to the topic."
+      "hint": "AI wrap-up heading: 'Final Thoughts'. Delete the section or rename the heading to the topic."
     }
   ],
   "openly": [
@@ -1037,11 +1037,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Clarity",
-      "hint": "Consider using '…' instead of '…'"
+      "hint": "Consider using 'assist' instead of 'help'"
     },
     {
       "id": "E-Prime",
-      "hint": "Avoid using \"…\""
+      "hint": "Avoid using \"am\""
     },
     {
       "id": "FutureTense",
@@ -1049,7 +1049,7 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "GenderBias",
-      "hint": "Consider using '…' instead of '…'"
+      "hint": "Consider using 'author' instead of 'authoress'"
     },
     {
       "id": "HeadingsPunctuation",
@@ -1057,11 +1057,11 @@ export const STYLE_RULES: Readonly<Record<string, readonly StyleRule[]>> =
     },
     {
       "id": "Hedging",
-      "hint": "Consider removing '…'"
+      "hint": "Consider removing 'appear to be'"
     },
     {
       "id": "Hyphens",
-      "hint": "Use '…' instead of '…'"
+      "hint": "Use 'African American' instead of 'African-American'"
     },
     {
       "id": "Link",
