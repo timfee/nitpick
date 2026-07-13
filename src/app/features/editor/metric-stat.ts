@@ -45,12 +45,14 @@ import { Component, ElementRef, inject, input, output } from '@angular/core';
     '(mouseleave)': 'hide.emit()',
     '(blur)': 'hide.emit()',
     '(keydown.escape)': 'hide.emit()',
+    '[attr.aria-describedby]': 'describedBy()',
   },
 })
 export class MetricStat {
   readonly label = input.required<string>();
   readonly value = input.required<string | number>();
   readonly status = input.required<'ok' | 'high' | 'severe'>();
+  readonly describedBy = input<string | null>(null);
 
   readonly show = output<HTMLElement>();
   readonly hide = output<void>();

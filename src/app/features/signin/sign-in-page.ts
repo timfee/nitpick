@@ -86,6 +86,14 @@ import { LintApi } from '../../core/lint-api';
       &:not(.ready) .gsi {
         pointer-events: none;
       }
+
+      // The real (Google-rendered) button is the one that's actually focusable
+      // and clickable, but it's visually invisible (opacity 0.001) — without
+      // this, keyboard users tabbing to it get no visible focus indicator.
+      &:focus-within button {
+        outline: 2px solid var(--mat-sys-primary);
+        outline-offset: 2px;
+      }
     }
   `,
 })

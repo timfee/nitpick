@@ -1,6 +1,6 @@
 import { FixResponseSchema, MAX_FINDINGS, type FixRequest, type FixResponse } from '../shared/lint';
 import { env } from './env';
-import { getGenAi, toResponseJsonSchema } from './genai';
+import { GEMINI_TIMEOUT_MS, getGenAi, toResponseJsonSchema } from './genai';
 
 const SYSTEM_INSTRUCTION = `You are Nitpicker, an expert copy editor.
 The user sends a JSON object with a "passage" and the "issues" found in it,
@@ -32,6 +32,9 @@ export async function fixText({ text, findings }: FixRequest): Promise<FixRespon
       responseMimeType: 'application/json',
       responseJsonSchema,
       temperature: 0.4,
+      // Same guard as lint: a stalled Vertex call fails fast instead of
+      // hanging the fix dialog's loading state.
+      abortSignal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
     },
   });
   const { rewrite } = FixResponseSchema.parse(JSON.parse(response.text ?? '{}'));

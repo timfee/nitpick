@@ -6,6 +6,13 @@
 mat-toolbar {
   gap: 0.5rem;
   border-bottom: 1px solid var(--mat-sys-outline-variant);
+  // Slimmer app-bar icons than Material's 24px-in-40px default.
+  --mat-icon-button-icon-size: 20px;
+  --mat-icon-button-state-layer-size: 36px;
+  // Compact widths need every pixel for the pannable strip.
+  @media (max-width: 40rem) {
+    gap: 0.25rem;
+  }
   .brand {
     display: inline-flex;
     align-items: center;
@@ -44,6 +51,12 @@ mat-toolbar {
     // Progress only shows while disabled, so tint the spinner for the
     // disabled container rather than the default on-primary.
     --mat-button-filled-progress-active-indicator-color: var(--mat-sys-primary);
+  }
+  // A rule count is information, not an alert; M3 badges default to the
+  // error palette, so retint through the badge's own tokens.
+  .settings {
+    --mat-badge-background-color: var(--mat-sys-primary);
+    --mat-badge-text-color: var(--mat-sys-on-primary);
   }
   // The toolbar row itself must not shrink; only nit-editor-toolbar's inner
   // strip is allowed to give up width via its own overflow-x.
@@ -84,10 +97,8 @@ nit-findings-panel {
   // Zoning must survive uncalibrated displays; a hairline plus a full
   // surface step reads reliably, unlike a ~2% tint delta alone.
   background: var(--mat-sys-surface-container);
-  border-inline-start: 1px solid var(--mat-sys-outline-variant);
   min-height: 0;
   @media (max-width: 60rem) {
-    border-inline-start: none;
     border-block-start: 1px solid var(--mat-sys-outline-variant);
   }
 }

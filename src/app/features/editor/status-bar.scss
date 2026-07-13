@@ -13,10 +13,8 @@
   color: var(--mat-sys-on-surface-variant);
   white-space: nowrap;
   overflow: hidden;
-  .sep {
-    width: 1px;
-    height: 1rem;
-    background: var(--mat-sys-outline-variant);
+  mat-divider {
+    block-size: 1rem;
     flex-shrink: 0;
   }
   .stat b {
@@ -48,7 +46,7 @@
   border-radius: 0.75rem;
   background: var(--mat-sys-surface-container);
   color: var(--mat-sys-on-surface);
-  box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+  box-shadow: var(--mat-sys-level3);
   pointer-events: none;
   white-space: normal;
   animation: hovercard-in 120ms ease-out;

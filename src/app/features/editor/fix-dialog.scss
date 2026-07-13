@@ -1,5 +1,10 @@
-h2[mat-dialog-title] {
-  font: var(--mat-sys-title-medium);
+// Title sized through the dialog's own subhead tokens.
+:host {
+  --mat-dialog-subhead-font: var(--mat-sys-title-medium-font);
+  --mat-dialog-subhead-size: var(--mat-sys-title-medium-size);
+  --mat-dialog-subhead-line-height: var(--mat-sys-title-medium-line-height);
+  --mat-dialog-subhead-weight: var(--mat-sys-title-medium-weight);
+  --mat-dialog-subhead-tracking: var(--mat-sys-title-medium-tracking);
 }
 .meta {
   display: flex;

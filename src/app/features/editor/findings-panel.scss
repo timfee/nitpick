@@ -48,20 +48,24 @@ header {
 }
 mat-card {
   cursor: pointer;
-  box-shadow: none;
   border-radius: 0.5rem;
   background: var(--mat-sys-surface-container-low);
-  /* --severity-color comes from the shared .severity-* classes. */
-  border-inline-start: 3px solid var(--severity-color);
-  @media (prefers-color-scheme: dark) {
-    border-inline-start-color: color-mix(in srgb, var(--severity-color) 70%, var(--mat-sys-surface));
-  }
   &.selected {
     background: var(--mat-sys-surface-container-high);
   }
   mat-card-header {
     justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
+  }
+  /* Same severity glyph as the fix dialog's table: a dot, not a stripe.
+     --severity-color comes from the shared .severity-* classes. */
+  .dot {
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-radius: 50%;
+    background: var(--severity-color);
+    flex-shrink: 0;
   }
   mat-card-title {
     font: var(--mat-sys-label-medium);
@@ -70,11 +74,9 @@ mat-card {
   }
   .dismiss {
     color: var(--mat-sys-on-surface-variant);
-    mat-icon {
-      font-size: 16px;
-      width: 16px;
-      height: 16px;
-    }
+    // Material's own sizing tokens, so the state layer shrinks with the icon.
+    --mat-icon-button-icon-size: 16px;
+    --mat-icon-button-state-layer-size: 32px;
   }
   blockquote,
   p {

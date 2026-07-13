@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Service, inject } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, timeout } from 'rxjs';
 
 import type { FixResponse, LintFinding, LintReport, StyleSelection } from '../../shared/lint';
 import { Auth } from './auth';
@@ -22,13 +22,19 @@ export class LintApi {
 
   check(text: string, styles?: StyleSelection[]): Promise<LintReport> {
     return firstValueFrom(
-      this.http.post<LintReport>('/api/lint', { text, styles }, this.authorized()),
+      this.http
+        .post<LintReport>('/api/lint', { text, styles }, this.authorized())
+        // Backstop above the server's own Gemini timeout: the button spinner
+        // must always resolve, even against a wedged connection.
+        .pipe(timeout(60_000)),
     );
   }
 
   fix(text: string, findings: LintFinding[]): Promise<FixResponse> {
     return firstValueFrom(
-      this.http.post<FixResponse>('/api/fix', { text, findings }, this.authorized()),
+      this.http
+        .post<FixResponse>('/api/fix', { text, findings }, this.authorized())
+        .pipe(timeout(60_000)),
     );
   }
 

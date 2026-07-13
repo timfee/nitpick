@@ -13,7 +13,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { Editor } from '@tiptap/core';
 
 import { environment } from '../../../environments/environment';
@@ -46,7 +45,7 @@ export function slugify(markdown: string): string {
  */
 @Component({
   selector: 'nit-file-menu',
-  imports: [MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatTooltipModule],
+  imports: [MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule],
   templateUrl: './file-menu.html',
   styleUrl: './file-menu.scss',
 })

@@ -48,6 +48,11 @@ function load(): StylePrefs {
 export class StyleSettings {
   private readonly prefs = signal<StylePrefs>(load());
 
+  /** Total enabled rules across every package, for the settings badge. */
+  readonly enabledCount = computed(() =>
+    Object.values(this.prefs().enabled).reduce((n, rules) => n + rules.length, 0),
+  );
+
   /** Lint request payload: active packages, narrowed to their enabled rules. */
   readonly selections = computed<StyleSelection[]>(() => {
     const { enabled } = this.prefs();

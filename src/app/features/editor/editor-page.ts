@@ -9,6 +9,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -59,6 +60,7 @@ clichés like the plague. At this point in time, most drafts could of been tight
 @Component({
   selector: 'nit-editor-page',
   imports: [
+    MatBadgeModule,
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
@@ -77,6 +79,9 @@ clichés like the plague. At this point in time, most drafts could of been tight
   host: {
     '(document:keydown.control.enter)': 'check()',
     '(document:keydown.meta.enter)': 'check()',
+    '(document:keydown.escape)': 'closePopover()',
+    '(window:resize)': 'onResize()',
+    '(document:click)': 'onDocumentClick($event)',
   },
 })
 export class EditorPage {
@@ -84,7 +89,7 @@ export class EditorPage {
   private readonly auth = inject(Auth);
   private readonly snackBar = inject(MatSnackBar);
   private readonly dialog = inject(MatDialog);
-  private readonly styleSettings = inject(StyleSettings);
+  protected readonly styleSettings = inject(StyleSettings);
 
   protected readonly editor = signal<Editor | null>(null);
   protected readonly findings = signal<UiFinding[]>([]);
@@ -186,6 +191,23 @@ export class EditorPage {
       this.handleError(err);
     } finally {
       this.checking.set(false);
+    }
+  }
+
+  /** Dismisses the popover, e.g. on Escape. */
+  protected closePopover(): void {
+    this.selectedId.set(null);
+  }
+
+  /** The popover's geometry is computed from viewport coordinates; a resize invalidates it. */
+  protected onResize(): void {
+    this.tick.update((t) => t + 1);
+  }
+
+  /** Closes the popover when clicking outside it and outside the editor (which has its own handling). */
+  protected onDocumentClick(event: MouseEvent): void {
+    if (!(event.target as HTMLElement).closest('nit-lint-popover, .tiptap')) {
+      this.selectedId.set(null);
     }
   }
 

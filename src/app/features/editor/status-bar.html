@@ -1,23 +1,25 @@
 <footer class="statusbar">
   <span class="stat"><b>{{ words() }}</b> words</span>
   @if (readability(); as r) {
-    <span class="sep optional" aria-hidden="true"></span>
+    <mat-divider vertical class="optional" />
     <span class="stat optional"><b>{{ r.sentences }}</b> sentences</span>
-    <span class="sep" aria-hidden="true"></span>
+    <mat-divider vertical />
     <nit-metric-stat
       label="Ease"
       [value]="r.ease.value"
       [status]="r.ease.status"
+      [describedBy]="card() ? 'readability-hovercard' : null"
       (show)="showEase($event, r)"
       (hide)="hideCard()"
     />
     @for (g of r.grades; track g.id) {
-      <span class="sep optional" aria-hidden="true"></span>
+      <mat-divider vertical class="optional" />
       <nit-metric-stat
         class="optional"
         [label]="g.short"
         [value]="g.value"
         [status]="g.status"
+        [describedBy]="card() ? 'readability-hovercard' : null"
         (show)="showGrade($event, g)"
         (hide)="hideCard()"
       />
@@ -26,7 +28,13 @@
 </footer>
 
 @if (card(); as c) {
-  <div class="hovercard" role="tooltip" [style.left.px]="c.left" [style.bottom.px]="c.bottom">
+  <div
+    id="readability-hovercard"
+    class="hovercard"
+    role="tooltip"
+    [style.left.px]="c.left"
+    [style.bottom.px]="c.bottom"
+  >
     <div class="head">
       <span class="label">{{ c.label }}</span>
       <span class="value" [class]="c.status">
