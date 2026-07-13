@@ -10,6 +10,7 @@ import {
   signal,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -141,7 +142,6 @@ const TOOLS: ToolbarItem[] = [
     exec: (c) => c.toggleCodeBlock(),
     active: ['codeBlock'],
   },
-  { icon: 'horizontal_rule', tip: 'Horizontal rule', exec: (c) => c.setHorizontalRule() },
 ];
 
 /** The strip that stays visible at compact widths — undo/redo plus the most-used marks. */
@@ -159,7 +159,7 @@ const OVERFLOW_TOOLS: (Tool | LinkAction)[] = TOOLS.filter(
 
 @Component({
   selector: 'nit-editor-toolbar',
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, MatTooltipModule],
+  imports: [MatButtonModule, MatDividerModule, MatIconModule, MatMenuModule, MatTooltipModule],
   host: {
     '(scroll)': 'updatePan()',
     '[class.fade-start]': 'canLeft()',
@@ -168,13 +168,14 @@ const OVERFLOW_TOOLS: (Tool | LinkAction)[] = TOOLS.filter(
   template: `
     @for (item of visibleTools(); track $index) {
       @if (isDivider(item)) {
-        <span class="divider"></span>
+        <mat-divider vertical />
       } @else if (isLinkAction(item)) {
         <button
           matIconButton
           matTooltip="Link"
           aria-label="Link"
           [class.active]="isLinkActive()"
+          [attr.aria-pressed]="isLinkActive()"
           [disabled]="isLinkDisabled()"
           (click)="toggleLink()"
         >
@@ -186,6 +187,7 @@ const OVERFLOW_TOOLS: (Tool | LinkAction)[] = TOOLS.filter(
           [matTooltip]="item.tip"
           [attr.aria-label]="item.tip"
           [class.active]="isOn(item)"
+          [attr.aria-pressed]="item.active ? isOn(item) : null"
           [disabled]="isDisabled(item)"
           (click)="run(item)"
         >
@@ -221,6 +223,9 @@ const OVERFLOW_TOOLS: (Tool | LinkAction)[] = TOOLS.filter(
       gap: 0.5rem;
       min-width: 0;
       overflow-x: auto;
+      // The buttons' focus/ripple chrome pokes 2px past the 40px row and
+      // would make the strip vertically pannable; only sideways makes sense.
+      overflow-y: hidden;
       // Material's invisible 48px touch targets poke past the 40px buttons
       // and would keep this strip permanently scrollable by 4px; turn them
       // off at the source rather than padding around the overhang.
@@ -257,11 +262,9 @@ const OVERFLOW_TOOLS: (Tool | LinkAction)[] = TOOLS.filter(
       background: var(--mat-sys-secondary-container);
       color: var(--mat-sys-on-secondary-container);
     }
-    .divider {
-      inline-size: 1px;
+    mat-divider {
       block-size: 1.5rem;
       align-self: center;
-      background: var(--mat-sys-outline-variant);
       // Toolbar gap is 0.5rem; adding another 0.5rem here makes the gutter
       // around a divider read as ~1rem, distinct from the 0.5rem within a
       // tool group.

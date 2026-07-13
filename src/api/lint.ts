@@ -2,7 +2,7 @@ import { LintReportSchema, MAX_FINDINGS, type LintReport, type StyleSelection } 
 import { STYLE_RULES } from '../shared/style-rules';
 import { DEFAULT_STYLE_IDS, STYLE_PACKAGES } from '../shared/styles';
 import { env } from './env';
-import { getGenAi, toResponseJsonSchema } from './genai';
+import { GEMINI_TIMEOUT_MS, getGenAi, toResponseJsonSchema } from './genai';
 
 const SYSTEM_INSTRUCTION = `You are Nitpicker, an expert copy editor.
 Lint the user's prose against the style packages listed below and report concrete,
@@ -62,6 +62,9 @@ export async function lintText(text: string, styles?: StyleSelection[]): Promise
       responseMimeType: 'application/json',
       responseJsonSchema,
       temperature: 0.2,
+      // A stalled Vertex call must fail the request, not hang it: the client
+      // is awaiting this round trip behind a button spinner.
+      abortSignal: AbortSignal.timeout(GEMINI_TIMEOUT_MS),
     },
   });
   const { findings } = LintReportSchema.parse(JSON.parse(response.text ?? '{}'));

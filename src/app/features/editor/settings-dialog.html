@@ -2,7 +2,18 @@
 
 <mat-dialog-content>
   <div class="layout">
-    <mat-nav-list aria-label="Style packages">
+    <!-- Compact widths swap the rail for Material's single-select chip row. -->
+    <div class="rail-chips">
+      <mat-chip-listbox aria-label="Style packages" [value]="selected()" (change)="pick($event.value)">
+        @for (pkg of packages; track pkg.id) {
+          <mat-chip-option [value]="pkg.id" [class.off]="!settings.enabledRuleCount(pkg.id)">
+            {{ pkg.label }}
+          </mat-chip-option>
+        }
+      </mat-chip-listbox>
+    </div>
+
+    <mat-action-list aria-label="Style packages">
       @for (pkg of packages; track pkg.id) {
         <button
           mat-list-item
@@ -21,7 +32,7 @@
           </span>
         </button>
       }
-    </mat-nav-list>
+    </mat-action-list>
 
     <section>
       @if (current(); as pkg) {

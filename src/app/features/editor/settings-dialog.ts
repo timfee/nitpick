@@ -1,5 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatListModule, type MatSelectionListChange } from '@angular/material/list';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -10,7 +11,7 @@ import { StyleSettings } from '../../core/style-settings';
 
 @Component({
   selector: 'nit-settings-dialog',
-  imports: [MatButtonModule, MatDialogModule, MatListModule, MatTooltipModule],
+  imports: [MatButtonModule, MatChipsModule, MatDialogModule, MatListModule, MatTooltipModule],
   templateUrl: './settings-dialog.html',
   styleUrl: './settings-dialog.scss',
 })
@@ -25,6 +26,11 @@ export class SettingsDialog {
 
   protected rulesFor(id: string): readonly StyleRule[] {
     return STYLE_RULES[id] ?? [];
+  }
+
+  /** Chip listboxes emit null when the active chip is clicked again; keep the selection. */
+  protected pick(id: string | null): void {
+    if (id) this.selected.set(id);
   }
 
   protected onRuleToggle(pkgId: string, change: MatSelectionListChange): void {

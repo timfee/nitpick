@@ -8,7 +8,11 @@
   }
   @if (siblings() > 1 || !finding().suggestion) {
     <button matButton (click)="fixLine.emit()">
-      Fix line{{ siblings() > 1 ? ' · ' + siblings() : '' }}
+      @if (siblings() > 1) {
+        Fix all {{ siblings() }} issues with AI
+      } @else {
+        Fix with AI
+      }
     </button>
   }
   <button matButton (click)="ignore.emit()">Ignore</button>

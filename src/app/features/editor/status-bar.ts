@@ -1,5 +1,7 @@
 import { Component, input, signal } from '@angular/core';
 
+import { MatDividerModule } from '@angular/material/divider';
+
 import { MetricStat } from './metric-stat';
 import type { ReadabilityGrade, ReadabilityReport } from './readability';
 
@@ -42,7 +44,7 @@ const CARD_MARGIN = 8;
  */
 @Component({
   selector: 'nit-status-bar',
-  imports: [MetricStat],
+  imports: [MatDividerModule, MetricStat],
   templateUrl: './status-bar.html',
   styleUrl: './status-bar.scss',
 })

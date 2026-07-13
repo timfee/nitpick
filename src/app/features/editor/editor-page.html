@@ -27,7 +27,15 @@
     <nit-file-menu [editor]="ed" (imported)="onImported()" />
   }
 
-  <button matIconButton matTooltip="Settings" aria-label="Settings" (click)="openSettings()">
+  <button
+    matIconButton
+    matTooltip="Settings"
+    aria-label="Settings"
+    class="settings"
+    [matBadge]="styleSettings.enabledCount()"
+    [matBadgeDescription]="styleSettings.enabledCount() + ' rules enabled'"
+    (click)="openSettings()"
+  >
     <mat-icon>tune</mat-icon>
   </button>
 

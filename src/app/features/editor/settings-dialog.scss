@@ -1,6 +1,11 @@
-// One dominant title; the package name below steps down to title-medium.
-h2[mat-dialog-title] {
-  font: var(--mat-sys-title-large);
+// One dominant title (the package name below steps down to title-medium),
+// set through the dialog's own subhead tokens rather than restyling its DOM.
+:host {
+  --mat-dialog-subhead-font: var(--mat-sys-title-large-font);
+  --mat-dialog-subhead-size: var(--mat-sys-title-large-size);
+  --mat-dialog-subhead-line-height: var(--mat-sys-title-large-line-height);
+  --mat-dialog-subhead-weight: var(--mat-sys-title-large-weight);
+  --mat-dialog-subhead-tracking: var(--mat-sys-title-large-tracking);
 }
 .layout {
   display: grid;
@@ -28,21 +33,37 @@ h2[mat-dialog-title] {
   }
 }
 
-mat-nav-list {
+// Material's single-select chips are the compact rail; the nav list is the
+// desktop one. Each renders only at its own width.
+.rail-chips {
+  display: none;
+  @media (max-width: 40rem) {
+    display: block;
+    overflow-x: auto;
+    scrollbar-width: none;
+    scroll-padding-inline: 1rem;
+    // End fade cues that the row scrolls; the last chip peeks in from under
+    // it instead of being cut off flush with the edge.
+    padding-inline-end: 2.5rem;
+    mask-image: linear-gradient(to right, black calc(100% - 2rem), transparent);
+    // Chips wrap by default; a rail wants one pannable row instead.
+    mat-chip-listbox {
+      width: max-content;
+    }
+    .off {
+      --mdc-chip-label-text-color: var(--mat-sys-on-surface-variant);
+    }
+  }
+}
+
+mat-action-list {
   overflow-y: auto;
   // The rail and the detail pane are separate zones; a hairline makes the
   // boundary explicit instead of relying on whitespace alone.
   border-inline-end: 1px solid var(--mat-sys-outline-variant);
   padding-inline-end: 0.75rem;
-  // Strip native button chrome; Material's list supplies the visuals.
-  button {
-    border: 0;
-    background: transparent;
-    font: inherit;
-    text-align: start;
-    cursor: pointer;
-  }
-  // Material gives the nav its ripple, hover, focus and the secondary-container
+  // Material gives the action list its ripple, hover, focus, button reset,
+  // and the secondary-container
   // activated fill for free; we only add the activated text colour and tighten
   // the rows.
   --mat-list-list-item-one-line-container-height: 2.75rem;
@@ -50,6 +71,12 @@ mat-nav-list {
     font: var(--mat-sys-label-small);
     color: var(--mat-sys-on-surface-variant);
     font-variant-numeric: tabular-nums;
+  }
+  // Action lists apply the activated class but (unlike nav lists) not the
+  // fill; paint the same secondary-container treatment ourselves.
+  .mdc-list-item--activated {
+    background: var(--mat-sys-secondary-container);
+    border-radius: 0.5rem;
   }
   .mdc-list-item--activated,
   .mdc-list-item--activated .count {
@@ -59,29 +86,7 @@ mat-nav-list {
     color: var(--mat-sys-on-surface-variant);
   }
   @media (max-width: 40rem) {
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    border-inline-end: none;
-    padding-block: 0;
-    gap: 0.5rem;
-    scroll-padding-inline: 1rem;
-    // Static end fade cues that the strip scrolls; the last chip peeks in
-    // from under it instead of being cut off flush with the edge.
-    padding-inline-end: 2.5rem;
-    mask-image: linear-gradient(to right, black calc(100% - 2rem), transparent);
-    button {
-      flex: 0 0 auto;
-      width: auto;
-    }
-    .mdc-list-item {
-      width: auto;
-      border-radius: 1rem;
-      background: var(--mat-sys-surface-container-high);
-    }
-    .mat-mdc-list-item-unscoped-content {
-      width: auto;
-    }
+    display: none;
   }
 }
 
